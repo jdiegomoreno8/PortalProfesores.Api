@@ -1,7 +1,13 @@
 using Microsoft.EntityFrameworkCore;
+using PortalProfesores.Domain.Entities;
 
 namespace PortalProfesores.Infrastructure.Data;
 
+/// <summary>
+/// Contexto principal de Entity Framework.
+/// Centraliza el acceso a la base de datos y registra
+/// las entidades utilizadas por la aplicación.
+/// </summary>
 public class PortalProfesoresDbContext : DbContext
 {
     public PortalProfesoresDbContext(DbContextOptions<PortalProfesoresDbContext> options)
@@ -9,8 +15,22 @@ public class PortalProfesoresDbContext : DbContext
     {
     }
 
+    #region DbSets
+
+    public DbSet<Persona> Personas => Set<Persona>();
+
+    public DbSet<Usuario> Usuarios => Set<Usuario>();
+
+    public DbSet<EstadoUsuario> EstadosUsuario => Set<EstadoUsuario>();
+
+    #endregion
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+
+        // Registra automáticamente todas las configuraciones
+        // IEntityTypeConfiguration<T> del proyecto Infrastructure.
+        modelBuilder.ApplyConfigurationsFromAssembly(typeof(PortalProfesoresDbContext).Assembly);
     }
 }
