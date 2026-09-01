@@ -1,15 +1,25 @@
+using Microsoft.EntityFrameworkCore;
+using PortalProfesores.Infrastructure.Data;
+using PortalProfesores.Infrastructure.DependencyInjection;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+// Registrar DbContext
+builder.Services.AddDbContext<PortalProfesoresDbContext>(options =>
+    options.UseSqlServer(
+        builder.Configuration.GetConnectionString("PortalProfesoresConnection")));
 
+// Registrar dependencias de la aplicación
+builder.Services.AddInfrastructure();
+
+// Servicios de ASP.NET Core
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+// Middleware
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
