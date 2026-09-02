@@ -6,15 +6,28 @@ using PortalProfesores.Infrastructure.Services;
 
 namespace PortalProfesores.Infrastructure.DependencyInjection;
 
+/// <summary>
+/// Centraliza el registro de las dependencias utilizadas por la aplicación.
+/// </summary>
 public static class ServiceCollectionExtensions
 {
     public static IServiceCollection AddInfrastructure(this IServiceCollection services)
     {
-        // Repositorios
+        #region Repositorios
+
         services.AddScoped<IHealthRepository, HealthRepository>();
 
-        // Servicios
+        services.AddScoped<IUsuarioRepository, UsuarioRepository>();
+		
+		services.AddScoped<IUsuarioService, UsuarioService>();
+
+        #endregion
+
+        #region Servicios
+
         services.AddScoped<IHealthService, HealthService>();
+
+        #endregion
 
         return services;
     }
