@@ -9,11 +9,11 @@ namespace PortalProfesores.Infrastructure.Services;
 /// </summary>
 public class AuthService : IAuthService
 {
-    private readonly IUsuarioService _usuarioService;
+    private readonly IUsuarioRepository _usuarioRepository;
 
-    public AuthService(IUsuarioService usuarioService)
+    public AuthService(IUsuarioRepository usuarioRepository)
     {
-        _usuarioService = usuarioService;
+        _usuarioRepository = usuarioRepository;
     }
 
     public async Task<LoginResponseDto> LoginAsync(LoginRequestDto request)
@@ -23,7 +23,7 @@ public class AuthService : IAuthService
             throw new ArgumentException("Debe ingresar un correo electrónico.");
 
         // Buscar usuario
-        var usuario = await _usuarioService.ObtenerPorCorreoAsync(request.CorreoElectronico);
+        var usuario =await _usuarioRepository.ObtenerPorCorreoAsync(request.CorreoElectronico);
 
         if (usuario == null)
             throw new Exception("El usuario no existe.");
