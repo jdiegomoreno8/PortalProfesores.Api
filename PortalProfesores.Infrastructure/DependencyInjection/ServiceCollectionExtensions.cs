@@ -22,6 +22,8 @@ public static class ServiceCollectionExtensions
 		services.AddScoped<IUsuarioService, UsuarioService>();
 		
 		services.AddScoped<IAuthService, AuthService>();
+		
+		services.AddScoped<IJwtService, JwtService>();
 
         #endregion
 

@@ -1,6 +1,6 @@
 using PortalProfesores.Domain.DTOs.Auth;
+using PortalProfesores.Domain.Interfaces.Repositories;
 using PortalProfesores.Domain.Interfaces.Services;
-
 namespace PortalProfesores.Infrastructure.Services;
 
 /// <summary>
