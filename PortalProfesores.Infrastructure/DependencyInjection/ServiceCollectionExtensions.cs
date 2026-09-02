@@ -20,6 +20,8 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IUsuarioRepository, UsuarioRepository>();
 		
 		services.AddScoped<IUsuarioService, UsuarioService>();
+		
+		services.AddScoped<IAuthService, AuthService>();
 
         #endregion
 
