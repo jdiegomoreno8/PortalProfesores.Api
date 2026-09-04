@@ -29,4 +29,14 @@ public class UsuarioRepository : IUsuarioRepository
             .FirstOrDefaultAsync(u =>
                 u.Persona.CorreoElectronico == correoElectronico);
     }
+	
+	/// <summary>
+/// Actualiza la información de un usuario.
+/// </summary>
+public async Task ActualizarAsync(Usuario usuario)
+{
+    _context.Usuarios.Update(usuario);
+
+    await _context.SaveChangesAsync();
+}
 }

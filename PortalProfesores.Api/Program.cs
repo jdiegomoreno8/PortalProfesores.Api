@@ -1,6 +1,14 @@
+using System.Text;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+//using PortalProfesores.Api.Utilities;
+//using PortalProfesores.Domain.Interfaces.Services;
+using PortalProfesores.Infrastructure.Configuration;
 using PortalProfesores.Infrastructure.Data;
 using PortalProfesores.Infrastructure.DependencyInjection;
+using Microsoft.OpenApi.Models;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,9 +23,78 @@ builder.Services.AddInfrastructure();
 // Servicios de ASP.NET Core
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(options =>
+{
+    options.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "Portal Profesores API",
+        Version = "v1"
+    });
+
+    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        Type = SecuritySchemeType.Http,
+        Scheme = "bearer",
+        BearerFormat = "JWT",
+        In = ParameterLocation.Header,
+        Description = "Ingrese únicamente el token JWT."
+    });
+
+    options.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            Array.Empty<string>()
+        }
+    });
+});
+builder.Services.Configure<JwtSettings>(
+builder.Configuration.GetSection("Jwt"));
+
+var jwtSettings = builder.Configuration
+    .GetSection("Jwt")
+    .Get<JwtSettings>()!;
+
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+
+            ValidIssuer = jwtSettings.Issuer,
+            ValidAudience = jwtSettings.Audience,
+
+            IssuerSigningKey = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(jwtSettings.Key))
+        };
+    });
 
 var app = builder.Build();
+
+// Utilidad temporal para generar hashes durante las pruebas.
+// Eliminar cuando exista el registro de usuarios.
+
+//using (var scope = app.Services.CreateScope())
+//{
+//    var passwordService = scope.ServiceProvider.GetRequiredService<IPasswordService>();
+
+//    Console.WriteLine("------------------------------------");
+//    Console.WriteLine("HASH DE PRUEBA");
+//    Console.WriteLine(PasswordGenerator.Generate(passwordService));
+//    Console.WriteLine("------------------------------------");
+//}
 
 // Middleware
 if (app.Environment.IsDevelopment())
@@ -28,8 +105,11 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseAuthentication();
+
 app.UseAuthorization();
 
 app.MapControllers();
 
 app.Run();
+

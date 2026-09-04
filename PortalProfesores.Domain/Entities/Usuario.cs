@@ -15,4 +15,6 @@ public class Usuario
     public Persona Persona { get; set; } = null!;
 
     public EstadoUsuario EstadoUsuario { get; set; } = null!;
+	
+	public DateTime? UltimoAcceso { get; set; }
 }

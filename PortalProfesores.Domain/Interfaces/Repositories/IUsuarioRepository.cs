@@ -13,4 +13,5 @@ public interface IUsuarioRepository
     /// <param name="correoElectronico">Correo registrado en la plataforma.</param>
     /// <returns>Usuario encontrado o null.</returns>
     Task<Usuario?> ObtenerPorCorreoAsync(string correoElectronico);
+	Task ActualizarAsync(Usuario usuario);
 }
