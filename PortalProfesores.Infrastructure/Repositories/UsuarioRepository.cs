@@ -16,6 +16,16 @@ public class UsuarioRepository : IUsuarioRepository
     {
         _context = context;
     }
+    /// <summary>
+    /// Obtiene un usuario por su identificador.
+    /// </summary>
+    public async Task<Usuario?> ObtenerPorIdAsync(long idUsuario)
+    {
+        return await _context.Usuarios
+            .Include(u => u.Persona)
+            .Include(u => u.EstadoUsuario)
+            .FirstOrDefaultAsync(u => u.IdUsuario == idUsuario);
+    }
 
     /// <summary>
     /// Busca un usuario por su correo electrónico incluyendo

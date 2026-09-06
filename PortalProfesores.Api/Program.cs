@@ -83,19 +83,6 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 var app = builder.Build();
 
-// Utilidad temporal para generar hashes durante las pruebas.
-// Eliminar cuando exista el registro de usuarios.
-
-//using (var scope = app.Services.CreateScope())
-//{
-//    var passwordService = scope.ServiceProvider.GetRequiredService<IPasswordService>();
-
-//    Console.WriteLine("------------------------------------");
-//    Console.WriteLine("HASH DE PRUEBA");
-//    Console.WriteLine(PasswordGenerator.Generate(passwordService));
-//    Console.WriteLine("------------------------------------");
-//}
-
 // Middleware
 if (app.Environment.IsDevelopment())
 {
@@ -104,6 +91,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseMiddleware<PortalProfesores.Api.Middleware.ExceptionMiddleware>();
 
 app.UseAuthentication();
 

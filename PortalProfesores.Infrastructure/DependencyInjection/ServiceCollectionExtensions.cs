@@ -31,6 +31,7 @@ public static class ServiceCollectionExtensions
 		
 		services.AddScoped<IPersonaRepository, PersonaRepository>();
 
+
         #endregion
 
         #region Servicios

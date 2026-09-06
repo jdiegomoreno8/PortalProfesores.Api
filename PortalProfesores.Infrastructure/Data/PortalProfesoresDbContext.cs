@@ -17,11 +17,17 @@ public class PortalProfesoresDbContext : DbContext
 
     #region DbSets
 
+
     public DbSet<Persona> Personas => Set<Persona>();
 
     public DbSet<Usuario> Usuarios => Set<Usuario>();
 
     public DbSet<EstadoUsuario> EstadosUsuario => Set<EstadoUsuario>();
+
+
+    public DbSet<Rol> Roles => Set<Rol>();
+
+    public DbSet<UsuarioRol> UsuariosRoles => Set<UsuarioRol>();
 
     #endregion
 
@@ -33,6 +39,8 @@ public class PortalProfesoresDbContext : DbContext
         // IEntityTypeConfiguration<T> del proyecto Infrastructure.
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(PortalProfesoresDbContext).Assembly);
     }
+
+   
 
     /// <summary>
     /// Persiste en la base de datos todas las entidades que

@@ -1,11 +1,11 @@
-using PortalProfesores.Domain.Entities;
+using PortalProfesores.Domain.DTOs.Usuario;
 using PortalProfesores.Domain.Interfaces.Repositories;
 using PortalProfesores.Domain.Interfaces.Services;
 
 namespace PortalProfesores.Infrastructure.Services;
 
 /// <summary>
-/// Implementa la lógica de negocio relacionada con los usuarios.
+/// Lógica de negocio relacionada con usuarios.
 /// </summary>
 public class UsuarioService : IUsuarioService
 {
@@ -16,16 +16,25 @@ public class UsuarioService : IUsuarioService
         _usuarioRepository = usuarioRepository;
     }
 
-    /// <summary>
-    /// Obtiene un usuario por su correo electrónico.
-    /// </summary>
-    /// <param name="correoElectronico">Correo electrónico del usuario.</param>
-    /// <returns>Usuario encontrado o null.</returns>
-    public async Task<Usuario?> ObtenerPorCorreoAsync(string correoElectronico)
+    public async Task<Domain.Entities.Usuario?> ObtenerPorCorreoAsync(string correoElectronico)
     {
-        if (string.IsNullOrWhiteSpace(correoElectronico))
-            throw new ArgumentException("El correo electrónico es obligatorio.");
+        return await _usuarioRepository.ObtenerPorCorreoAsync(correoElectronico);
+    }
 
-        return await _usuarioRepository.ObtenerPorCorreoAsync(correoElectronico.Trim());
+    public async Task<UsuarioPerfilDto> ObtenerPerfilAsync(long idUsuario)
+    {
+        var usuario = await _usuarioRepository.ObtenerPorIdAsync(idUsuario);
+
+        if (usuario == null)
+            throw new Exception("Usuario no encontrado.");
+
+        return new UsuarioPerfilDto
+        {
+            IdUsuario = usuario.IdUsuario,
+            Nombres = usuario.Persona.Nombres,
+            Apellidos = usuario.Persona.Apellidos,
+            CorreoElectronico = usuario.Persona.CorreoElectronico,
+            Estado = usuario.EstadoUsuario.Nombre
+        };
     }
 }

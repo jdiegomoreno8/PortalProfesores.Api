@@ -17,4 +17,7 @@ public class Usuario
     public EstadoUsuario EstadoUsuario { get; set; } = null!;
 	
 	public DateTime? UltimoAcceso { get; set; }
+
+    public ICollection<UsuarioRol> Roles { get; set; }
+    = new List<UsuarioRol>();
 }

@@ -1,3 +1,4 @@
+using PortalProfesores.Domain.DTOs.Usuario;
 using PortalProfesores.Domain.Entities;
 
 namespace PortalProfesores.Domain.Interfaces.Services;
@@ -11,4 +12,9 @@ public interface IUsuarioService
     /// Obtiene un usuario utilizando su correo electrónico.
     /// </summary>
     Task<Usuario?> ObtenerPorCorreoAsync(string correoElectronico);
+
+    /// <summary>
+    /// Obtiene el perfil del usuario autenticado.
+    /// </summary>
+    Task<UsuarioPerfilDto> ObtenerPerfilAsync(long idUsuario);
 }

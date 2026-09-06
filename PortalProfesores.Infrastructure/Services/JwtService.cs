@@ -26,10 +26,11 @@ public class JwtService : IJwtService
     {
         var claims = new List<Claim>
         {
-            new Claim(JwtRegisteredClaimNames.Sub, idUsuario.ToString()),
-            new Claim(JwtRegisteredClaimNames.Email, correo),
-            new Claim(JwtRegisteredClaimNames.Name, nombreCompleto),
-            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+               new Claim(ClaimTypes.NameIdentifier, idUsuario.ToString()),
+               new Claim(JwtRegisteredClaimNames.Sub, idUsuario.ToString()),
+               new Claim(JwtRegisteredClaimNames.Email, correo),
+               new Claim(JwtRegisteredClaimNames.Name, nombreCompleto),
+               new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
         };
 
         var key = new SymmetricSecurityKey(
