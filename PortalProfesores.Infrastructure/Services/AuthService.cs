@@ -1,65 +1,75 @@
+using Microsoft.EntityFrameworkCore;
 using PortalProfesores.Domain.DTOs.Auth;
+using PortalProfesores.Domain.Entities;
 using PortalProfesores.Domain.Interfaces.Repositories;
 using PortalProfesores.Domain.Interfaces.Services;
+using PortalProfesores.Infrastructure.Data;
+
 namespace PortalProfesores.Infrastructure.Services;
 
 /// <summary>
-/// Servicio responsable del proceso de autenticación.
-/// En este bloque únicamente valida la existencia y estado del usuario.
+/// Servicio responsable de la autenticación y registro de usuarios.
+/// Centraliza la lógica de negocio relacionada con el acceso al sistema.
 /// </summary>
 public class AuthService : IAuthService
 {
+    private readonly PortalProfesoresDbContext _context;
     private readonly IUsuarioRepository _usuarioRepository;
-	private readonly IPasswordService _passwordService;
-	private readonly IJwtService _jwtService;
+    private readonly IPersonaRepository _personaRepository;
+    private readonly IPasswordService _passwordService;
+    private readonly IJwtService _jwtService;
 
     public AuthService(
-        IUsuarioRepository usuarioRepository, 
-        IPasswordService passwordService, 
+        PortalProfesoresDbContext context,
+        IUsuarioRepository usuarioRepository,
+        IPersonaRepository personaRepository,
+        IPasswordService passwordService,
         IJwtService jwtService)
     {
+        _context = context;
         _usuarioRepository = usuarioRepository;
-		_passwordService = passwordService;
-		_jwtService = jwtService;
+        _personaRepository = personaRepository;
+        _passwordService = passwordService;
+        _jwtService = jwtService;
     }
 
+    /// <summary>
+    /// Autentica un usuario y genera un token JWT.
+    /// </summary>
     public async Task<LoginResponseDto> LoginAsync(LoginRequestDto request)
     {
-        // Validar información de entrada
+        // Validar información de entrada.
         if (string.IsNullOrWhiteSpace(request.CorreoElectronico))
             throw new ArgumentException("Debe ingresar un correo electrónico.");
 
-        // Buscar usuario
-        var usuario =await _usuarioRepository.ObtenerPorCorreoAsync(request.CorreoElectronico);
+        // Buscar el usuario registrado.
+        var usuario = await _usuarioRepository.ObtenerPorCorreoAsync(request.CorreoElectronico);
 
         if (usuario == null)
             throw new Exception("Correo electrónico o contraseña incorrectos.");
 
-        // Validar estado
+        // Validar estado del usuario.
         if (!usuario.EstadoUsuario.Nombre.Equals("Activo", StringComparison.OrdinalIgnoreCase))
             throw new Exception("El usuario no se encuentra activo.");
 
         if (string.IsNullOrWhiteSpace(usuario.ClaveHash))
-        {
             throw new Exception("La cuenta no tiene una contraseña configurada.");
-        }
 
-        if (!_passwordService.VerifyPassword(
-        request.Clave,usuario.ClaveHash))
-		{
-			throw new Exception("Correo electrónico o contraseña incorrectos.");
-		}
-		//Último acceso del usuario
-		usuario.UltimoAcceso = DateTime.UtcNow;
+        // Validar contraseña.
+        if (!_passwordService.VerifyPassword(request.Clave, usuario.ClaveHash))
+            throw new Exception("Correo electrónico o contraseña incorrectos.");
 
-		await _usuarioRepository.ActualizarAsync(usuario);
-		
-		var token = _jwtService.GenerarToken(
-			usuario.IdUsuario,
-			usuario.Persona.CorreoElectronico,
-			$"{usuario.Persona.Nombres} {usuario.Persona.Apellidos}");
+        // Registrar el último acceso.
+        usuario.UltimoAcceso = DateTime.UtcNow;
 
-      // // Retornar la información del usuario junto con el JWT generado.
+        await _usuarioRepository.ActualizarAsync(usuario);
+
+        // Generar JWT.
+        var token = _jwtService.GenerarToken(
+            usuario.IdUsuario,
+            usuario.Persona.CorreoElectronico,
+            $"{usuario.Persona.Nombres} {usuario.Persona.Apellidos}");
+
         return new LoginResponseDto
         {
             IdUsuario = usuario.IdUsuario,
@@ -67,5 +77,79 @@ public class AuthService : IAuthService
             CorreoElectronico = usuario.Persona.CorreoElectronico,
             Token = token
         };
+    }
+
+    /// <summary>
+    /// Registra un nuevo usuario en la plataforma.
+    /// La operación se ejecuta dentro de una transacción para
+    /// garantizar la consistencia de los datos.
+    /// </summary>
+    public async Task<RegisterResponseDto> RegistrarAsync(RegisterRequestDto request)
+    {
+        await using var transaction =
+            await _context.Database.BeginTransactionAsync();
+
+        try
+        {
+            // Validar información obligatoria.
+            if (string.IsNullOrWhiteSpace(request.Nombres) ||
+                string.IsNullOrWhiteSpace(request.Apellidos) ||
+                string.IsNullOrWhiteSpace(request.CorreoElectronico) ||
+                string.IsNullOrWhiteSpace(request.Clave))
+            {
+                throw new ArgumentException("Todos los campos son obligatorios.");
+            }
+
+            // Verificar que el correo no exista.
+            if (await _usuarioRepository.ExisteCorreoAsync(request.CorreoElectronico))
+            {
+                throw new Exception("El correo electrónico ya se encuentra registrado.");
+            }
+
+            // Crear la persona.
+            var persona = new Persona
+            {
+                IdTipoDocumento = 1,     // Temporal
+                IdCiudad = 3,            // Temporal
+                NumeroDocumento = Guid.NewGuid().ToString(),
+
+                Nombres = request.Nombres,
+                Apellidos = request.Apellidos,
+                CorreoElectronico = request.CorreoElectronico,
+                FechaIngreso = DateTime.UtcNow
+        };
+
+            await _personaRepository.CrearAsync(persona);
+            // PRUEBA
+            await _context.GuardarCambiosAsync();
+
+            // Crear el usuario asociado.
+            var usuario = new Usuario
+            {
+                Persona = persona,
+                IdEstadoUsuario = 1, // Estado Activo
+                ClaveHash = _passwordService.HashPassword(request.Clave)
+            };
+
+            await _usuarioRepository.CrearAsync(usuario);
+
+            // Persistir todos los cambios de la transacción.
+            await _context.GuardarCambiosAsync();
+
+            // Confirmar la transacción.
+            await transaction.CommitAsync();
+
+            return new RegisterResponseDto
+            {
+                IdUsuario = usuario.IdUsuario,
+                Mensaje = "Usuario registrado correctamente."
+            };
+        }
+        catch
+        {
+            // Revertir todos los cambios si ocurre algún error.
+            await transaction.RollbackAsync();
+            throw;
+        }
     }
 }

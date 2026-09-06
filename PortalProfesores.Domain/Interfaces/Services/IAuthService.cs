@@ -11,4 +11,5 @@ public interface IAuthService
     /// Inicia el proceso de autenticación de un usuario.
     /// </summary>
     Task<LoginResponseDto> LoginAsync(LoginRequestDto request);
+    Task<RegisterResponseDto> RegistrarAsync(RegisterRequestDto request);
 }

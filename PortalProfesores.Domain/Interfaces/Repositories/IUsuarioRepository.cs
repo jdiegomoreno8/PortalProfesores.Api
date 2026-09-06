@@ -8,10 +8,22 @@ namespace PortalProfesores.Domain.Interfaces.Repositories;
 public interface IUsuarioRepository
 {
     /// <summary>
-    /// Obtiene un usuario a partir de su correo electrónico.
+    /// Obtiene un usuario por correo electrónico.
     /// </summary>
-    /// <param name="correoElectronico">Correo registrado en la plataforma.</param>
-    /// <returns>Usuario encontrado o null.</returns>
     Task<Usuario?> ObtenerPorCorreoAsync(string correoElectronico);
-	Task ActualizarAsync(Usuario usuario);
+
+    /// <summary>
+    /// Actualiza la información de un usuario.
+    /// </summary>
+    Task ActualizarAsync(Usuario usuario);
+
+    /// <summary>
+    /// Verifica si ya existe un usuario con el correo indicado.
+    /// </summary>
+    Task<bool> ExisteCorreoAsync(string correoElectronico);
+
+    /// <summary>
+    /// Registra un nuevo usuario.
+    /// </summary>
+    Task<Usuario> CrearAsync(Usuario usuario);
 }

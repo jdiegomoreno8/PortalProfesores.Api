@@ -29,14 +29,34 @@ public class UsuarioRepository : IUsuarioRepository
             .FirstOrDefaultAsync(u =>
                 u.Persona.CorreoElectronico == correoElectronico);
     }
-	
-	/// <summary>
-/// Actualiza la información de un usuario.
-/// </summary>
-public async Task ActualizarAsync(Usuario usuario)
-{
-    _context.Usuarios.Update(usuario);
 
-    await _context.SaveChangesAsync();
-}
+    /// <summary>
+    /// Actualiza la información de un usuario.
+    /// </summary>
+    public async Task ActualizarAsync(Usuario usuario)
+    {
+        _context.Usuarios.Update(usuario);
+
+        await _context.SaveChangesAsync();
+    }
+
+    /// <summary>
+    /// Verifica si el correo electrónico ya está registrado.
+    /// </summary>
+    public async Task<bool> ExisteCorreoAsync(string correoElectronico)
+    {
+        return await _context.Usuarios
+            .Include(u => u.Persona)
+            .AnyAsync(u => u.Persona.CorreoElectronico == correoElectronico);
+    }
+
+    /// <summary>
+    /// Registra un nuevo usuario en la base de datos.
+    /// </summary>
+    public Task<Usuario> CrearAsync(Usuario usuario)
+    {
+        _context.Usuarios.Add(usuario);
+
+        return Task.FromResult(usuario);
+    }
 }

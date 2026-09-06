@@ -28,4 +28,16 @@ public class AuthController : ControllerBase
 
         return Ok(response);
     }
+
+    /// <summary>
+    /// Registra un nuevo usuario en la plataforma.
+    /// </summary>
+    [HttpPost("register")]
+    public async Task<IActionResult> Register(RegisterRequestDto request)
+    {
+        var response = await _authService.RegistrarAsync(request);
+
+        return Ok(response);
+    }
+
 }

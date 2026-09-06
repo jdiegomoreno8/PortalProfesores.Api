@@ -5,7 +5,7 @@ using PortalProfesores.Domain.Entities;
 namespace PortalProfesores.Infrastructure.Data.Configurations;
 
 /// <summary>
-/// Configuración de los estados posibles de un usuario.
+/// Configuración de la entidad EstadoUsuario.
 /// </summary>
 public class EstadoUsuarioConfiguration : IEntityTypeConfiguration<EstadoUsuario>
 {
@@ -14,6 +14,9 @@ public class EstadoUsuarioConfiguration : IEntityTypeConfiguration<EstadoUsuario
         builder.ToTable("EstadoUsuario");
 
         builder.HasKey(x => x.IdEstadoUsuario);
+
+        builder.Property(x => x.IdEstadoUsuario)
+               .HasColumnName("IdEstadoUsuario");
 
         builder.Property(x => x.Nombre)
                .HasMaxLength(100)

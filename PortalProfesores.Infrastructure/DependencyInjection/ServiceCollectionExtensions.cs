@@ -28,6 +28,8 @@ public static class ServiceCollectionExtensions
 		services.AddScoped<IPasswordService, PasswordService>();
 		
 		services.AddScoped<IJwtService, JwtService>();
+		
+		services.AddScoped<IPersonaRepository, PersonaRepository>();
 
         #endregion
 

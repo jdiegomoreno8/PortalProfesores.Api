@@ -33,4 +33,13 @@ public class PortalProfesoresDbContext : DbContext
         // IEntityTypeConfiguration<T> del proyecto Infrastructure.
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(PortalProfesoresDbContext).Assembly);
     }
+
+    /// <summary>
+    /// Persiste en la base de datos todas las entidades que
+    /// se encuentran pendientes en el DbContext.
+    /// </summary>
+    public async Task GuardarCambiosAsync()
+    {
+        await SaveChangesAsync();
+    }
 }
