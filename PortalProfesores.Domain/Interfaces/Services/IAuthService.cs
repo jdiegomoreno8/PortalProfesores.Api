@@ -12,4 +12,5 @@ public interface IAuthService
     /// </summary>
     Task<LoginResponseDto> LoginAsync(LoginRequestDto request);
     Task<RegisterResponseDto> RegistrarAsync(RegisterRequestDto request);
+    //Task<PerfilResponseDto> ObtenerPerfilAsync(long idUsuario);
 }

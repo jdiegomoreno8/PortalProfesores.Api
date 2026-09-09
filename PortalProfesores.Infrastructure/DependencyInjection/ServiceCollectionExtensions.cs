@@ -4,6 +4,7 @@ using PortalProfesores.Domain.Interfaces.Services;
 using PortalProfesores.Infrastructure.Repositories;
 using PortalProfesores.Infrastructure.Services;
 
+
 namespace PortalProfesores.Infrastructure.DependencyInjection;
 
 /// <summary>
@@ -30,6 +31,8 @@ public static class ServiceCollectionExtensions
 		services.AddScoped<IJwtService, JwtService>();
 		
 		services.AddScoped<IPersonaRepository, PersonaRepository>();
+		
+		services.AddScoped<IProfesorService, ProfesorService>();
 
 
         #endregion

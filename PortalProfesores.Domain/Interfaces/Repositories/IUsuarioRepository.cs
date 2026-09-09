@@ -22,7 +22,12 @@ public interface IUsuarioRepository
     /// <summary>
     /// Verifica si ya existe un usuario con el correo indicado.
     /// </summary>
-    Task<bool> ExisteCorreoAsync(string correoElectronico);
+    /// 
+    Task<bool> ExisteCorreoAsync(
+    string correoElectronico);
+
+    Task<bool> ExisteCorreoAsync(string correoElectronico,
+    long idUsuario);
 
     /// <summary>
     /// Registra un nuevo usuario.

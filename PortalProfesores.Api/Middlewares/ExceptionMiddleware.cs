@@ -1,5 +1,6 @@
 using System.Net;
 using System.Text.Json;
+using PortalProfesores.Domain.Exceptions;
 
 namespace PortalProfesores.Api.Middleware;
 
@@ -39,15 +40,26 @@ public class ExceptionMiddleware
 
         context.Response.StatusCode = exception switch
         {
+            ValidationException => (int)HttpStatusCode.BadRequest,
+
+            UnauthorizedException => (int)HttpStatusCode.Unauthorized,
+
+            NotFoundException => (int)HttpStatusCode.NotFound,
+
+            ConflictException => (int)HttpStatusCode.Conflict,
+
             ArgumentException => (int)HttpStatusCode.BadRequest,
+
             UnauthorizedAccessException => (int)HttpStatusCode.Unauthorized,
+
             _ => (int)HttpStatusCode.InternalServerError
         };
 
         var response = new
         {
-            Success = false,
-            Message = exception.Message
+            success = false,
+            statusCode = context.Response.StatusCode,
+            message = exception.Message
         };
 
         return context.Response.WriteAsync(

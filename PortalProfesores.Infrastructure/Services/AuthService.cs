@@ -4,6 +4,8 @@ using PortalProfesores.Domain.Entities;
 using PortalProfesores.Domain.Interfaces.Repositories;
 using PortalProfesores.Domain.Interfaces.Services;
 using PortalProfesores.Infrastructure.Data;
+using PortalProfesores.Domain.Exceptions;
+
 
 namespace PortalProfesores.Infrastructure.Services;
 
@@ -18,6 +20,7 @@ public class AuthService : IAuthService
     private readonly IPersonaRepository _personaRepository;
     private readonly IPasswordService _passwordService;
     private readonly IJwtService _jwtService;
+    
 
     public AuthService(
         PortalProfesoresDbContext context,
@@ -31,6 +34,7 @@ public class AuthService : IAuthService
         _personaRepository = personaRepository;
         _passwordService = passwordService;
         _jwtService = jwtService;
+        
     }
 
     /// <summary>
@@ -40,24 +44,26 @@ public class AuthService : IAuthService
     {
         // Validar información de entrada.
         if (string.IsNullOrWhiteSpace(request.CorreoElectronico))
-            throw new ArgumentException("Debe ingresar un correo electrónico.");
+            throw new ValidationException(
+                "Debe ingresar un correo electrónico.");
 
         // Buscar el usuario registrado.
         var usuario = await _usuarioRepository.ObtenerPorCorreoAsync(request.CorreoElectronico);
 
         if (usuario == null)
-            throw new Exception("Correo electrónico o contraseña incorrectos.");
+            throw new UnauthorizedException(
+                "Correo electrónico o contraseña incorrectos.");
 
         // Validar estado del usuario.
         if (!usuario.EstadoUsuario.Nombre.Equals("Activo", StringComparison.OrdinalIgnoreCase))
-            throw new Exception("El usuario no se encuentra activo.");
+            throw new UnauthorizedException("El usuario no se encuentra activo.");
 
         if (string.IsNullOrWhiteSpace(usuario.ClaveHash))
-            throw new Exception("La cuenta no tiene una contraseña configurada.");
+            throw new ValidationException("La cuenta no tiene una contraseña configurada.");
 
         // Validar contraseña.
         if (!_passwordService.VerifyPassword(request.Clave, usuario.ClaveHash))
-            throw new Exception("Correo electrónico o contraseña incorrectos.");
+            throw new UnauthorizedException("Correo electrónico o contraseña incorrectos.");
 
         // Registrar el último acceso.
         usuario.UltimoAcceso = DateTime.UtcNow;
@@ -97,13 +103,13 @@ public class AuthService : IAuthService
                 string.IsNullOrWhiteSpace(request.CorreoElectronico) ||
                 string.IsNullOrWhiteSpace(request.Clave))
             {
-                throw new ArgumentException("Todos los campos son obligatorios.");
+                throw new ValidationException("Todos los campos son obligatorios.");
             }
 
             // Verificar que el correo no exista.
             if (await _usuarioRepository.ExisteCorreoAsync(request.CorreoElectronico))
             {
-                throw new Exception("El correo electrónico ya se encuentra registrado.");
+                throw new ConflictException("El correo electrónico ya se encuentra registrado.");
             }
 
             // Crear la persona.
@@ -152,4 +158,21 @@ public class AuthService : IAuthService
             throw;
         }
     }
+
+    //public async Task<PerfilResponseDto> ObtenerPerfilAsync(long idUsuario)
+    //{
+    //    var usuario = await _usuarioRepository.ObtenerPorIdAsync(idUsuario);
+
+    //    if (usuario == null)
+    //        throw new Exception("Usuario no encontrado.");
+
+    //    return new PerfilResponseDto
+    //    {
+    //        IdUsuario = usuario.IdUsuario,
+    //        Nombres = usuario.Persona.Nombres,
+    //        Apellidos = usuario.Persona.Apellidos,
+    //        CorreoElectronico = usuario.Persona.CorreoElectronico,
+    //        Estado = usuario.EstadoUsuario.Nombre
+    //    };
+    //}
 }

@@ -22,6 +22,18 @@ builder.Services.AddInfrastructure();
 
 // Servicios de ASP.NET Core
 builder.Services.AddControllers();
+// Configuración de CORS para permitir
+// que el Frontend Angular consuma la API.
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("Angular", policy =>
+    {
+        policy.WithOrigins("http://localhost:4200")
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
@@ -81,6 +93,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
+builder.Services.AddHttpContextAccessor();
+
 var app = builder.Build();
 
 // Middleware
@@ -91,6 +105,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseCors("Angular");
 
 app.UseMiddleware<PortalProfesores.Api.Middleware.ExceptionMiddleware>();
 

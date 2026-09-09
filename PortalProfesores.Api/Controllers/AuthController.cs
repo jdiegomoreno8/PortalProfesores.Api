@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 using PortalProfesores.Domain.DTOs.Auth;
 using PortalProfesores.Domain.Interfaces.Services;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 
 namespace PortalProfesores.Api.Controllers;
 
@@ -39,5 +41,24 @@ public class AuthController : ControllerBase
 
         return Ok(response);
     }
+
+    /// <summary>
+    /// Obtiene el perfil del usuario autenticado.
+    /// </summary>
+    //[Authorize]
+    //[HttpGet("perfil")]
+    //public async Task<IActionResult> Perfil()
+    //{
+    //    var idClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+
+    //    if (idClaim == null)
+    //        return Unauthorized();
+
+    //    var idUsuario = long.Parse(idClaim.Value);
+
+    //    var response = await _authService.ObtenerPerfilAsync(idUsuario);
+
+    //    return Ok(response);
+    //}
 
 }

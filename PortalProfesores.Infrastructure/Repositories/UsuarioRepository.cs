@@ -59,6 +59,21 @@ public class UsuarioRepository : IUsuarioRepository
             .Include(u => u.Persona)
             .AnyAsync(u => u.Persona.CorreoElectronico == correoElectronico);
     }
+    /// <summary>
+    /// Indica si existe otro usuario con el mismo correo electrónico.
+    /// </summary>
+    public async Task<bool> ExisteCorreoAsync(
+    string correoElectronico,
+    long idUsuario)
+{
+    return await _context.Usuarios
+        .Include(u => u.Persona)
+        .AnyAsync(u =>
+
+            u.Persona.CorreoElectronico == correoElectronico
+            &&
+            u.IdUsuario != idUsuario);
+}
 
     /// <summary>
     /// Registra un nuevo usuario en la base de datos.
