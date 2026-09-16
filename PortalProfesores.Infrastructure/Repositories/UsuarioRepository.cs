@@ -34,10 +34,12 @@ public class UsuarioRepository : IUsuarioRepository
     public async Task<Usuario?> ObtenerPorCorreoAsync(string correoElectronico)
     {
         return await _context.Usuarios
-            .Include(u => u.Persona)
-            .Include(u => u.EstadoUsuario)
-            .FirstOrDefaultAsync(u =>
-                u.Persona.CorreoElectronico == correoElectronico);
+         .Include(u => u.Persona)
+         .Include(u => u.EstadoUsuario)
+         .Include(u => u.Roles)
+             .ThenInclude(ur => ur.Rol)
+         .FirstOrDefaultAsync(u =>
+             u.Persona.CorreoElectronico == correoElectronico);
     }
 
     /// <summary>

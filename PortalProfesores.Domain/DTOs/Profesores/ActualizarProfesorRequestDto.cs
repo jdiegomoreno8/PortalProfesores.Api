@@ -19,4 +19,19 @@ public class ActualizarProfesorRequestDto
     /// Correo electrónico.
     /// </summary>
     public string CorreoElectronico { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Teléfono.
+    /// </summary>
+    public string? Telefono { get; set; }
+
+    /// <summary>
+    /// Fecha de nacimiento.
+    /// </summary>
+    public DateOnly? FechaNacimiento { get; set; }
+
+    /// <summary>
+    /// Ciudad.
+    /// </summary>
+    public long? IdCiudad { get; set; }
 }

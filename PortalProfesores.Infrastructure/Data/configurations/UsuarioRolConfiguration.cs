@@ -26,10 +26,12 @@ public class UsuarioRolConfiguration : IEntityTypeConfiguration<UsuarioRol>
         builder.Property(x => x.IdRol)
                .HasColumnName("IdRol");
 
+        // Relación Usuario → UsuarioRol
         builder.HasOne(x => x.Usuario)
-               .WithMany()
+               .WithMany(x => x.Roles)
                .HasForeignKey(x => x.IdUsuario);
 
+        // Relación Rol → UsuarioRol
         builder.HasOne(x => x.Rol)
                .WithMany(x => x.Usuarios)
                .HasForeignKey(x => x.IdRol);

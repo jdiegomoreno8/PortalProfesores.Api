@@ -14,9 +14,7 @@ public class PortalProfesoresDbContext : DbContext
         : base(options)
     {
     }
-
     #region DbSets
-
 
     public DbSet<Persona> Personas => Set<Persona>();
 
@@ -24,10 +22,13 @@ public class PortalProfesoresDbContext : DbContext
 
     public DbSet<EstadoUsuario> EstadosUsuario => Set<EstadoUsuario>();
 
-
     public DbSet<Rol> Roles => Set<Rol>();
 
     public DbSet<UsuarioRol> UsuariosRoles => Set<UsuarioRol>();
+
+    public DbSet<TipoDocumento> TiposDocumento => Set<TipoDocumento>();
+
+    public DbSet<Ciudad> Ciudades => Set<Ciudad>();
 
     #endregion
 

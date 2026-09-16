@@ -12,7 +12,7 @@ public class Usuario
 
     public string? ClaveHash { get; set; }
 
-    public Persona Persona { get; set; } = null!;
+    public Persona? Persona { get; set; } = null!;
 
     public EstadoUsuario EstadoUsuario { get; set; } = null!;
 	

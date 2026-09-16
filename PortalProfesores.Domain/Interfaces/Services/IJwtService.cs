@@ -6,7 +6,9 @@ namespace PortalProfesores.Domain.Interfaces.Services;
 /// </summary>
 public interface IJwtService
 {
-    string GenerarToken(long idUsuario,
-                        string correo,
-                        string nombreCompleto);
+    string GenerarToken(
+        long idUsuario,
+        string correo,
+        string nombreCompleto,
+        IEnumerable<string> roles);
 }

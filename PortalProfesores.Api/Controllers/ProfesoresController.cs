@@ -11,7 +11,7 @@ namespace PortalProfesores.Api.Controllers;
 /// del perfil del profesor.
 /// </summary>
 [ApiController]
-[Authorize]
+[Authorize(Roles = "Profesor")]
 [Route("api/[controller]")]
 public class ProfesoresController : ControllerBase
 {
@@ -29,7 +29,8 @@ public class ProfesoresController : ControllerBase
     [HttpGet("perfil")]
     public async Task<IActionResult> ObtenerPerfil()
     {
-        var idUsuarioClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+        var idUsuarioClaim =
+            User.FindFirst(ClaimTypes.NameIdentifier);
 
         if (idUsuarioClaim == null)
         {
@@ -49,7 +50,8 @@ public class ProfesoresController : ControllerBase
     public async Task<IActionResult> ActualizarPerfil(
         ActualizarProfesorRequestDto request)
     {
-        var idUsuarioClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+        var idUsuarioClaim =
+            User.FindFirst(ClaimTypes.NameIdentifier);
 
         if (idUsuarioClaim == null)
         {
@@ -60,6 +62,9 @@ public class ProfesoresController : ControllerBase
             long.Parse(idUsuarioClaim.Value),
             request);
 
-        return NoContent();
+        return Ok(new ActualizarProfesorResponseDto
+        {
+            Mensaje = "Perfil actualizado correctamente."
+        });
     }
 }

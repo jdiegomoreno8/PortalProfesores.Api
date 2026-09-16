@@ -89,6 +89,37 @@ public class ProfesorService : IProfesorService
                 "El correo electrónico no es válido.");
         }
 
+        //Validad ciudad
+        if (request.IdCiudad == null)
+        {
+            throw new ArgumentException(
+                "Debe seleccionar una ciudad.");
+        }
+
+        //Fecha de nacimiento
+        if (request.FechaNacimiento == null)
+        {
+            throw new ArgumentException(
+                "Debe ingresar la fecha de nacimiento.");
+        }
+
+        //Validación fecha nacimiento
+        if (request.FechaNacimiento > DateOnly.FromDateTime(DateTime.Today))
+        {
+            throw new ArgumentException(
+                "La fecha de nacimiento no es válida.");
+        }
+
+        // Validar teléfono.
+        if (!string.IsNullOrWhiteSpace(request.Telefono)
+            && request.Telefono.Length > 60)
+        {
+            throw new ArgumentException(
+                "El teléfono no puede superar los 30 caracteres.");
+        }
+
+
+
         // Verificar que el correo no pertenezca a otro usuario.
         if (await _usuarioRepository.ExisteCorreoAsync(
             request.CorreoElectronico,
@@ -112,6 +143,15 @@ public class ProfesorService : IProfesorService
 
         usuario.Persona.CorreoElectronico =
             request.CorreoElectronico.Trim();
+
+        usuario.Persona.Telefono =
+            request.Telefono.Trim();
+
+        usuario.Persona.FechaNacimiento =
+            request.FechaNacimiento;
+
+        //usuario.Persona.IdCiudad =
+        //    request.IdCiudad;
 
         await _usuarioRepository.ActualizarAsync(usuario);
     }

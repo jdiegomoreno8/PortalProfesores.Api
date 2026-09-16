@@ -42,23 +42,6 @@ public class AuthController : ControllerBase
         return Ok(response);
     }
 
-    /// <summary>
-    /// Obtiene el perfil del usuario autenticado.
-    /// </summary>
-    //[Authorize]
-    //[HttpGet("perfil")]
-    //public async Task<IActionResult> Perfil()
-    //{
-    //    var idClaim = User.FindFirst(ClaimTypes.NameIdentifier);
-
-    //    if (idClaim == null)
-    //        return Unauthorized();
-
-    //    var idUsuario = long.Parse(idClaim.Value);
-
-    //    var response = await _authService.ObtenerPerfilAsync(idUsuario);
-
-    //    return Ok(response);
-    //}
+  
 
 }
