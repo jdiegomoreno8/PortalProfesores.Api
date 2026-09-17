@@ -29,6 +29,7 @@ public class PortalProfesoresDbContext : DbContext
     public DbSet<TipoDocumento> TiposDocumento => Set<TipoDocumento>();
 
     public DbSet<Ciudad> Ciudades => Set<Ciudad>();
+    public DbSet<ProfesorDetalle> ProfesoresDetalle => Set<ProfesorDetalle>();
 
     #endregion
 

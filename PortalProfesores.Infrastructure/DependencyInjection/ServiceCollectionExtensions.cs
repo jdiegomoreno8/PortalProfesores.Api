@@ -3,6 +3,7 @@ using PortalProfesores.Domain.Interfaces.Repositories;
 using PortalProfesores.Domain.Interfaces.Services;
 using PortalProfesores.Infrastructure.Repositories;
 using PortalProfesores.Infrastructure.Services;
+using PortalProfesores.Infrastructure.Services.Catalogos;
 
 
 namespace PortalProfesores.Infrastructure.DependencyInjection;
@@ -19,20 +20,16 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IHealthRepository, HealthRepository>();
 
         services.AddScoped<IUsuarioRepository, UsuarioRepository>();
-		
-		services.AddScoped<IUsuarioService, UsuarioService>();
-		
-		services.AddScoped<IAuthService, AuthService>();
-		
-		services.AddScoped<IJwtService, JwtService>();
-		
-		services.AddScoped<IPasswordService, PasswordService>();
-		
-		services.AddScoped<IJwtService, JwtService>();
-		
+
+        services.AddScoped<IProfesorDetalleRepository, ProfesorDetalleRepository>();    
+				
 		services.AddScoped<IPersonaRepository, PersonaRepository>();
-		
-		services.AddScoped<IProfesorService, ProfesorService>();
+
+        services.AddScoped<ITipoDocumentoRepository, TipoDocumentoRepository>();
+
+        services.AddScoped<ICiudadRepository, CiudadRepository>();
+
+
 
 
         #endregion
@@ -40,6 +37,24 @@ public static class ServiceCollectionExtensions
         #region Servicios
 
         services.AddScoped<IHealthService, HealthService>();
+
+        services.AddScoped<IUsuarioService, UsuarioService>();
+
+        services.AddScoped<IAuthService, AuthService>();
+
+        services.AddScoped<IJwtService, JwtService>();
+
+        services.AddScoped<IPasswordService, PasswordService>();
+
+        services.AddScoped<IProfesorService, ProfesorService>();
+
+        services.AddScoped<IAdministradorService, AdministradorService>();
+
+        services.AddScoped<ITipoDocumentoRepository, TipoDocumentoRepository>();
+
+        services.AddScoped<ICiudadRepository, CiudadRepository>();
+
+        services.AddScoped<ICatalogoService, CatalogoService>();
 
         #endregion
 

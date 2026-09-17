@@ -4,7 +4,7 @@ public class Persona
 {
     public long IdPersona { get; set; }
 
-    public long? IdTipoDocumento { get; set; }
+    public long IdTipoDocumento { get; set; }
 
     public long? IdCiudad { get; set; }
 

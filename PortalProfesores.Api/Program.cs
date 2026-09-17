@@ -8,6 +8,8 @@ using PortalProfesores.Infrastructure.Configuration;
 using PortalProfesores.Infrastructure.Data;
 using PortalProfesores.Infrastructure.DependencyInjection;
 using Microsoft.OpenApi.Models;
+using PortalProfesores.Domain.Interfaces.Services;
+using PortalProfesores.Infrastructure.Data.Seeds;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -96,6 +98,25 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 builder.Services.AddHttpContextAccessor();
 
 var app = builder.Build();
+
+//Seed Administrator
+
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+
+    var context = services
+        .GetRequiredService<PortalProfesoresDbContext>();
+
+    var passwordService = services
+        .GetRequiredService<IPasswordService>();
+
+    await AdministradorSeed.InicializarAsync(
+        context,
+        passwordService,
+        builder.Configuration);
+}
+
 
 // Middleware
 if (app.Environment.IsDevelopment())
