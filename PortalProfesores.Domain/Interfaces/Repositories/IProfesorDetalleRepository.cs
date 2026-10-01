@@ -15,6 +15,12 @@ public interface IProfesorDetalleRepository
     Task<ProfesorDetalle?> ObtenerPorPersonaAsync(long idPersona);
 
     /// <summary>
+    /// Obtiene el detalle de un profesor a partir de su identificador.
+    /// Incluye la persona y el usuario relacionado.
+    /// </summary>
+    Task<ProfesorDetalle?> ObtenerPorIdAsync(long idProfesor);
+
+    /// <summary>
     /// Registra el detalle de un nuevo profesor.
     /// </summary>
     Task<ProfesorDetalle> CrearAsync(ProfesorDetalle profesorDetalle);

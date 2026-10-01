@@ -28,6 +28,14 @@ public class ProfesorDetalleRepository : IProfesorDetalleRepository
             .FirstOrDefaultAsync(x => x.IdPersona == idPersona);
     }
 
+    public async Task<ProfesorDetalle?> ObtenerPorIdAsync(long idProfesor)
+    {
+        return await _context.ProfesoresDetalle
+            .Include(x => x.Persona)
+                .ThenInclude(persona => persona.Usuario)
+            .FirstOrDefaultAsync(x => x.IdProfesor == idProfesor);
+    }
+
     /// <summary>
     /// Registra un nuevo detalle de profesor.
     /// </summary>

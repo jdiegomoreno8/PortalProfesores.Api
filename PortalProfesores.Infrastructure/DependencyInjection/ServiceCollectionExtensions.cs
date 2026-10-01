@@ -29,6 +29,8 @@ public static class ServiceCollectionExtensions
 
         services.AddScoped<ICiudadRepository, CiudadRepository>();
 
+        services.AddScoped<IProfesorRepository, ProfesorRepository>();
+
 
 
 

@@ -31,6 +31,12 @@ public class PortalProfesoresDbContext : DbContext
     public DbSet<Ciudad> Ciudades => Set<Ciudad>();
     public DbSet<ProfesorDetalle> ProfesoresDetalle => Set<ProfesorDetalle>();
 
+    // Catálogo de niveles académicos.
+    // Es utilizado actualmente por EstudianteDetalle
+    // y posteriormente será utilizado por Microclase.
+    public DbSet<Nivel> Niveles => Set<Nivel>();
+    public DbSet<EstudianteDetalle> EstudiantesDetalle => Set<EstudianteDetalle>();
+
     #endregion
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

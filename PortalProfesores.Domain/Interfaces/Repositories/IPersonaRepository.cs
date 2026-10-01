@@ -11,4 +11,8 @@ public interface IPersonaRepository
     /// Registra una nueva persona.
     /// </summary>
     Task<Persona> CrearAsync(Persona persona);
+
+    Task<bool> ExisteDocumentoAsync(
+    string numeroDocumento,
+    long idPersona);
 }

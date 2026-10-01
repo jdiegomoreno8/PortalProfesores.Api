@@ -12,4 +12,15 @@ public interface IAdministradorService
     /// Crea un nuevo profesor y sus entidades relacionadas.
     /// </summary>
     Task CrearProfesorAsync(CrearProfesorRequestDto request);
+    Task<IEnumerable<ProfesorListadoDto>> ObtenerProfesoresAsync();
+
+    Task<ProfesorDetalleDto?> ObtenerDetalleProfesorAsync(long idProfesor);
+
+    Task EditarProfesorAsync(
+      long idProfesor,
+      EditarProfesorRequestDto request);
+
+    Task CambiarEstadoProfesorAsync(
+    long idProfesor,
+    CambiarEstadoProfesorRequestDto request);
 }

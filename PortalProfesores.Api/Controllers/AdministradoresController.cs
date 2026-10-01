@@ -37,4 +37,70 @@ public class AdministradoresController : ControllerBase
             Mensaje = "Profesor creado correctamente."
         });
     }
+
+    /// <summary>
+    /// Obtiene el listado de profesores registrados.
+    /// </summary>
+    [HttpGet("profesores")]
+    public async Task<IActionResult> ObtenerProfesores()
+    {
+        var profesores =
+            await _administradorService.ObtenerProfesoresAsync();
+
+        return Ok(profesores);
+    }
+    /// <summary>
+    /// Obtiene el detalle de profesores registrados.
+    /// </summary>
+
+    [HttpGet("profesores/{idProfesor:long}")]
+    public async Task<IActionResult> ObtenerDetalleProfesor(long idProfesor)
+    {
+        var profesor =
+            await _administradorService.ObtenerDetalleProfesorAsync(idProfesor);
+
+        if (profesor is null)
+        {
+            return NotFound(new
+            {
+                Mensaje = "El profesor no fue encontrado."
+            });
+        }
+
+        return Ok(profesor);
+    }
+
+    [HttpPut("profesores/{idProfesor:long}")]
+    public async Task<IActionResult> EditarProfesor(
+    long idProfesor,
+    EditarProfesorRequestDto request)
+    {
+        await _administradorService.EditarProfesorAsync(
+            idProfesor,
+            request);
+
+        return Ok(new
+        {
+            Mensaje = "Profesor actualizado correctamente."
+        });
+    }
+
+    /// <summary>
+    /// Cambia el estado de un profesor.
+    /// Esta operación solo puede ser ejecutada por un Administrador.
+    /// </summary>
+    [HttpPut("profesores/{idProfesor:long}/estado")]
+    public async Task<IActionResult> CambiarEstadoProfesor(
+        long idProfesor,
+        CambiarEstadoProfesorRequestDto request)
+    {
+        await _administradorService.CambiarEstadoProfesorAsync(
+            idProfesor,
+            request);
+
+        return Ok(new
+        {
+            Mensaje = "Estado del profesor actualizado correctamente."
+        });
+    }
 }
