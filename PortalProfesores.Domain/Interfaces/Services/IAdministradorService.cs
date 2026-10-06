@@ -1,4 +1,5 @@
 ﻿using PortalProfesores.Domain.DTOs.Profesores;
+using PortalProfesores.Domain.DTOs.Estudiantes;
 
 namespace PortalProfesores.Domain.Interfaces.Services;
 
@@ -23,4 +24,11 @@ public interface IAdministradorService
     Task CambiarEstadoProfesorAsync(
     long idProfesor,
     CambiarEstadoProfesorRequestDto request);
+
+    /// <summary>
+    /// Cambia el estado de un estudiante.
+    /// </summary>
+    Task CambiarEstadoEstudianteAsync(
+        long idEstudiante,
+        CambiarEstadoEstudianteRequestDto request);
 }

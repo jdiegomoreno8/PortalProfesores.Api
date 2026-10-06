@@ -5,6 +5,7 @@ using PortalProfesores.Infrastructure.Repositories;
 using PortalProfesores.Infrastructure.Services;
 using PortalProfesores.Infrastructure.Services.Catalogos;
 
+using PortalProfesores.Infrastructure.Services.Clases;
 
 namespace PortalProfesores.Infrastructure.DependencyInjection;
 
@@ -29,7 +30,22 @@ public static class ServiceCollectionExtensions
 
         services.AddScoped<ICiudadRepository, CiudadRepository>();
 
+        services.AddScoped<INivelRepository, NivelRepository>();
+
+        services.AddScoped<IIdiomaRepository, IdiomaRepository>();
+
+        services.AddScoped<ICategoriaRepository, CategoriaRepository>();
+
         services.AddScoped<IProfesorRepository, ProfesorRepository>();
+
+        // Repositorio encargado del acceso a los datos de los estudiantes.
+        services.AddScoped<IEstudianteRepository, EstudianteRepository>();
+
+        services.AddScoped<IClaseRepository, ClaseRepository>();
+
+       
+
+
 
 
 
@@ -50,13 +66,13 @@ public static class ServiceCollectionExtensions
 
         services.AddScoped<IProfesorService, ProfesorService>();
 
-        services.AddScoped<IAdministradorService, AdministradorService>();
-
-        services.AddScoped<ITipoDocumentoRepository, TipoDocumentoRepository>();
-
-        services.AddScoped<ICiudadRepository, CiudadRepository>();
+        services.AddScoped<IAdministradorService, AdministradorService>();      
 
         services.AddScoped<ICatalogoService, CatalogoService>();
+
+        services.AddScoped<IEstudianteService, EstudianteService>();
+
+        services.AddScoped<IClaseService, ClaseService>();
 
         #endregion
 

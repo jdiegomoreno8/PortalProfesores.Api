@@ -12,13 +12,17 @@ public class CatalogoService : ICatalogoService
 {
     private readonly ITipoDocumentoRepository _tipoDocumentoRepository;
     private readonly ICiudadRepository _ciudadRepository;
+    private readonly INivelRepository _nivelRepository;
 
     public CatalogoService(
         ITipoDocumentoRepository tipoDocumentoRepository,
-        ICiudadRepository ciudadRepository)
+        ICiudadRepository ciudadRepository,
+        INivelRepository nivelRepository)
+
     {
         _tipoDocumentoRepository = tipoDocumentoRepository;
         _ciudadRepository = ciudadRepository;
+        _nivelRepository = nivelRepository;
     }
 
     /// <summary>
@@ -47,6 +51,21 @@ public class CatalogoService : ICatalogoService
         return ciudades.Select(x => new CatalogoItemDto
         {
             Id = x.IdCiudad,
+            Nombre = x.Nombre
+        });
+    }
+
+    /// <summary>
+    /// Obtiene los niveles académicos disponibles.
+    /// </summary>
+    public async Task<IEnumerable<CatalogoItemDto>> ObtenerNivelesAsync()
+    {
+        var niveles =
+            await _nivelRepository.ObtenerTodosAsync();
+
+        return niveles.Select(x => new CatalogoItemDto
+        {
+            Id = x.IdNivel,
             Nombre = x.Nombre
         });
     }

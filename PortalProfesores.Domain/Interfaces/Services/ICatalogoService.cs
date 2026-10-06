@@ -17,4 +17,9 @@ public interface ICatalogoService
     /// Obtiene las ciudades disponibles.
     /// </summary>
     Task<IEnumerable<CatalogoItemDto>> ObtenerCiudadesAsync();
+
+    /// <summary>
+    /// Obtiene los niveles académicos disponibles.
+    /// </summary>
+    Task<IEnumerable<CatalogoItemDto>> ObtenerNivelesAsync();
 }

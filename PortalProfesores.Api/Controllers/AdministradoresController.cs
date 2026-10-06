@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using PortalProfesores.Domain.DTOs.Estudiantes;
 using PortalProfesores.Domain.DTOs.Profesores;
 using PortalProfesores.Domain.Interfaces.Services;
 
@@ -101,6 +102,25 @@ public class AdministradoresController : ControllerBase
         return Ok(new
         {
             Mensaje = "Estado del profesor actualizado correctamente."
+        });
+    }
+
+    /// <summary>
+    /// Cambia el estado de un estudiante.
+    /// Esta operación solo puede ser ejecutada por un Administrador.
+    /// </summary>
+    [HttpPut("estudiantes/{idEstudiante:long}/estado")]
+    public async Task<IActionResult> CambiarEstadoEstudiante(
+        long idEstudiante,
+        CambiarEstadoEstudianteRequestDto request)
+    {
+        await _administradorService.CambiarEstadoEstudianteAsync(
+            idEstudiante,
+            request);
+
+        return Ok(new
+        {
+            Mensaje = "Estado del estudiante actualizado correctamente."
         });
     }
 }

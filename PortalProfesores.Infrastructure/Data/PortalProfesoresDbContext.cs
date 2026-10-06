@@ -35,6 +35,15 @@ public class PortalProfesoresDbContext : DbContext
     // Es utilizado actualmente por EstudianteDetalle
     // y posteriormente será utilizado por Microclase.
     public DbSet<Nivel> Niveles => Set<Nivel>();
+
+    public DbSet<Idioma> Idiomas => Set<Idioma>();
+
+    public DbSet<Categoria> Categorias => Set<Categoria>();
+
+    // Clases disponibles en el portal.
+    public DbSet<Clase> Clases => Set<Clase>();
+
+    public DbSet<Sesion> Sesiones => Set<Sesion>();
     public DbSet<EstudianteDetalle> EstudiantesDetalle => Set<EstudianteDetalle>();
 
     #endregion

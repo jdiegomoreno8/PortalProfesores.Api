@@ -1,4 +1,5 @@
-﻿using PortalProfesores.Domain.DTOs.Profesores;
+﻿using PortalProfesores.Domain.DTOs.Estudiantes;
+using PortalProfesores.Domain.DTOs.Profesores;
 using PortalProfesores.Domain.Entities;
 using PortalProfesores.Domain.Exceptions;
 using PortalProfesores.Domain.Interfaces.Repositories;
@@ -26,12 +27,14 @@ public class AdministradorService : IAdministradorService
     private readonly IPasswordService _passwordService;
     private readonly PortalProfesoresDbContext _context;
     private readonly IProfesorRepository _profesorRepository;
+    private readonly IEstudianteRepository _estudianteRepository;
 
     public AdministradorService(
         IPersonaRepository personaRepository,
         IUsuarioRepository usuarioRepository,
         IProfesorDetalleRepository profesorDetalleRepository,
         IProfesorRepository profesorRepository,
+        IEstudianteRepository estudianteRepository,
         IPasswordService passwordService,
         PortalProfesoresDbContext context)
     {
@@ -39,6 +42,7 @@ public class AdministradorService : IAdministradorService
         _usuarioRepository = usuarioRepository;
         _profesorDetalleRepository = profesorDetalleRepository;
         _profesorRepository = profesorRepository;
+        _estudianteRepository = estudianteRepository;
         _passwordService = passwordService;
         _context = context;
     }
@@ -422,6 +426,56 @@ public class AdministradorService : IAdministradorService
         usuario.IdEstadoUsuario = nuevoEstado;
 
         await _context.SaveChangesAsync();
+    }
+
+
+    ///Cambiar estado estudiante
+    public async Task CambiarEstadoEstudianteAsync(
+    long idEstudiante,
+    CambiarEstadoEstudianteRequestDto request)
+    {
+        if (idEstudiante <= 0)
+        {
+            throw new ArgumentException(
+                "El identificador del estudiante no es válido.");
+        }
+
+        if (request.IdEstadoUsuario <= 0)
+        {
+            throw new ArgumentException(
+                "El estado seleccionado no es válido.");
+        }
+
+        if (request.IdEstadoUsuario > EstadoUsuarioEliminado)
+        {
+            throw new ArgumentException(
+                "El estado seleccionado no es válido.");
+        }
+
+        var estudiante =
+            await _estudianteRepository.ObtenerPorIdAsync(
+                idEstudiante);
+
+        if (estudiante is null)
+        {
+            throw new KeyNotFoundException(
+                "El estudiante no fue encontrado.");
+        }
+
+        // Aquí necesitamos conocer el estado actual.
+        // Lo obtenemos desde el DTO mediante el nombre
+        // únicamente si necesitamos validar la transición.
+
+        var resultado =
+            await _estudianteRepository.CambiarEstadoAsync(
+                idEstudiante,
+                request.IdEstadoUsuario);
+
+        if (!resultado)
+        {
+            throw new InvalidOperationException(
+                "No fue posible cambiar el estado del estudiante.");
+        }
     }
 
     /// <summary>

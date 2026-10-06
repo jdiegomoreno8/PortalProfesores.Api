@@ -41,4 +41,16 @@ public class CatalogosController : ControllerBase
 
         return Ok(ciudades);
     }
+
+    /// <summary>
+    /// Obtiene los niveles académicos disponibles.
+    /// </summary>
+    [HttpGet("niveles")]
+    public async Task<IActionResult> ObtenerNiveles()
+    {
+        var niveles =
+            await _catalogoService.ObtenerNivelesAsync();
+
+        return Ok(niveles);
+    }
 }
