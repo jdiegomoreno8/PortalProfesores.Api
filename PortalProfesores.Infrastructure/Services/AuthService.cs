@@ -155,6 +155,18 @@ public class AuthService : IAuthService
                     "El número de documento ya se encuentra registrado.");
             }
 
+            //Nivel
+
+            var nivelExiste = await _context.Niveles
+                .AnyAsync(x => x.IdNivel == request.IdNivel);
+
+            if (!nivelExiste)
+            {
+                throw new ValidationException(
+                    "El nivel académico seleccionado no es válido.");
+            }
+
+
             // Crear Persona.
             var persona = new Persona
             {
@@ -198,6 +210,24 @@ public class AuthService : IAuthService
 
             await _context.GuardarCambiosAsync();
 
+            // Crear el perfil del estudiante.
+            var estudiante = new EstudianteDetalle
+            {
+                IdPersona = persona.IdPersona,
+                IdNivel = request.IdNivel,
+                ObjetivoAprendizaje = null,
+                Observaciones = null,
+                FotoPerfilUrl = null,
+                FechaIngreso = DateTime.UtcNow,
+                FechaCreacion = DateTime.UtcNow
+            };
+
+            _context.Set<EstudianteDetalle>().Add(estudiante);
+
+            await _context.GuardarCambiosAsync();
+
+
+
             await transaction.CommitAsync();
 
             return new RegisterResponseDto
@@ -206,10 +236,14 @@ public class AuthService : IAuthService
                 Mensaje = "Usuario registrado correctamente."
             };
         }
-        catch
+        catch (Exception ex)
         {
             await transaction.RollbackAsync();
             throw;
         }
+
+
     }
+
+
 }

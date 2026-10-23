@@ -21,6 +21,8 @@ public class ProfesorPerfilResponseDto
 
     public string? Ciudad { get; set; }
 
+    public string? FotoPerfilUrl { get; set; }
+
     public string Estado { get; set; } = string.Empty;
 
     public DateTime FechaIngreso { get; set; }

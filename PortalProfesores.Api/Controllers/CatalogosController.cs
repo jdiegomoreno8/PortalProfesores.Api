@@ -53,4 +53,41 @@ public class CatalogosController : ControllerBase
 
         return Ok(niveles);
     }
+
+    /// <summary>
+    /// Obtiene las categorias académicos disponibles.
+    /// </summary>
+    [HttpGet("categorias")]
+    public async Task<IActionResult> ObtenerCategorias()
+    {
+        var categorias =
+            await _catalogoService.ObtenerCategoriasAsync();
+
+        return Ok(categorias);
+    }
+
+    /// <summary>
+    /// Obtiene los idiomas académicos disponibles.
+    /// </summary>
+    [HttpGet("idiomas")]
+    public async Task<IActionResult> ObtenerIdiomas()
+    {
+        var idiomas =
+            await _catalogoService.ObtenerIdiomasAsync();
+
+        return Ok(idiomas);
+    }
+
+    /// <summary>
+    /// Obtiene las monedas disponibles para las tarifas de las clases.
+    /// </summary>
+    [HttpGet("monedas")]
+    public async Task<IActionResult> ObtenerMonedas()
+    {
+        var monedas =
+            await _catalogoService.ObtenerMonedasAsync();
+
+        return Ok(monedas);
+    }
+
 }

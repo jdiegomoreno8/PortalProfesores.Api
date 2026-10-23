@@ -2,6 +2,8 @@
 using PortalProfesores.Domain.Interfaces.Repositories;
 using PortalProfesores.Domain.Interfaces.Services;
 using PortalProfesores.Domain.Entities;
+using Azure.Core;
+using PortalProfesores.Infrastructure.Repositories;
 
 namespace PortalProfesores.Infrastructure.Services.Clases;
 
@@ -14,17 +16,23 @@ public class ClaseService : IClaseService
     private readonly INivelRepository _nivelRepository;
     private readonly IIdiomaRepository _idiomaRepository;
     private readonly ICategoriaRepository _categoriaRepository;
+    private readonly IMonedaRepository _monedaRepository;
+    private readonly IConfiguracionRepository _configuracionRepository;
 
     public ClaseService(
         IClaseRepository claseRepository,
     INivelRepository nivelRepository,
     IIdiomaRepository idiomaRepository,
-    ICategoriaRepository categoriaRepository)
+    ICategoriaRepository categoriaRepository,
+    IMonedaRepository monedaRepository,
+    IConfiguracionRepository configuracionRepository)
     {
         _claseRepository = claseRepository;
         _nivelRepository = nivelRepository;
         _idiomaRepository = idiomaRepository;
         _categoriaRepository = categoriaRepository;
+        _monedaRepository = monedaRepository;
+        _configuracionRepository = configuracionRepository;
     }
 
     /// <summary>
@@ -46,6 +54,11 @@ public class ClaseService : IClaseService
             Nivel = x.Nivel?.Nombre ?? string.Empty,
             Categoria = x.Categoria?.Nombre ?? string.Empty,
             DuracionMinutos = x.DuracionMinutos,
+
+            Precio = x.Precio,
+            IdMoneda = x.IdMoneda,
+            Moneda = x.Moneda?.Nombre ?? string.Empty,
+            CodigoMoneda = x.Moneda?.CodigoISO ?? string.Empty,
             Orden = x.Orden
         });
     }
@@ -61,6 +74,9 @@ public class ClaseService : IClaseService
             throw new ArgumentException(
                 "El identificador de la clase no es válido.");
         }
+
+
+
 
         var clase =
             await _claseRepository.ObtenerPorIdAsync(idClase);
@@ -86,17 +102,47 @@ public class ClaseService : IClaseService
             IdEstadoClase = clase.IdEstadoClase,
             EstadoClase = clase.EstadoClase?.Nombre ?? string.Empty,
 
+
             Titulo = clase.Titulo,
             Descripcion = clase.Descripcion,
             UrlVideo = clase.UrlVideo,
+
             DuracionMinutos = clase.DuracionMinutos,
+
+
+            Precio = clase.Precio,
+            IdMoneda = clase.IdMoneda,
+            Moneda = clase.Moneda?.Nombre ?? string.Empty,
+            CodigoMoneda = clase.Moneda?.CodigoISO ?? string.Empty,
+
             Orden = clase.Orden,
 
             FechaCreacion = clase.FechaCreacion,
             FechaActualizacion = clase.FechaActualizacion
         };
     }
+    private async Task<int> ObtenerDuracionClaseAsync()
+    {
+        var configuracion =
+            await _configuracionRepository.ObtenerPorClaveAsync(
+                "DURACION_CLASE");
 
+        if (configuracion is null)
+        {
+            throw new InvalidOperationException(
+                "No existe la configuración DURACION_CLASE.");
+        }
+
+        if (!int.TryParse(configuracion.Valor, out var duracion) ||
+            duracion <= 0)
+        {
+            throw new InvalidOperationException(
+                "La configuración DURACION_CLASE debe contener " +
+                "un número entero mayor que cero.");
+        }
+
+        return duracion;
+    }
 
 
     /// <summary>
@@ -128,18 +174,21 @@ public class ClaseService : IClaseService
                 "La categoría seleccionada no es válida.");
         }
 
-        if (request.DuracionMinutos.HasValue &&
-            request.DuracionMinutos <= 0)
+       
+
+
+        if (request.Precio <= 0)
         {
             throw new ArgumentException(
-                "La duración de la clase no es válida.");
+                "El precio de la clase debe ser mayor que cero.");
         }
 
-        if (request.Orden <= 0)
+        if (request.IdMoneda <= 0)
         {
             throw new ArgumentException(
-                "El orden de la clase no es válido.");
+                "La moneda seleccionada no es válida.");
         }
+
 
         // Validar que el idioma exista.
         var idiomas = await _idiomaRepository.ObtenerTodosAsync();
@@ -168,6 +217,26 @@ public class ClaseService : IClaseService
                 "La categoría seleccionada no existe.");
         }
 
+
+        var monedas = await _monedaRepository.ObtenerTodosAsync();
+
+        if (!monedas.Any(x => x.IdMoneda == request.IdMoneda))
+        {
+            throw new ArgumentException(
+                "La moneda seleccionada no existe.");
+        }
+
+
+        // Obtener el siguiente orden dentro de la combinación
+        // Idioma + Nivel + Categoría.
+        var siguienteOrden =
+            await _claseRepository.ObtenerSiguienteOrdenAsync(
+                request.IdIdioma,
+                request.IdNivel,
+                request.IdCategoria);
+
+        var duracion = await ObtenerDuracionClaseAsync();
+
         var clase = new Clase
         {
             IdIdioma = request.IdIdioma,
@@ -177,9 +246,15 @@ public class ClaseService : IClaseService
             Titulo = request.Titulo.Trim(),
             Descripcion = request.Descripcion?.Trim(),
             UrlVideo = request.UrlVideo?.Trim(),
+            DuracionMinutos = duracion,
 
-            DuracionMinutos = request.DuracionMinutos,
-            Orden = request.Orden,
+            Orden = siguienteOrden,
+
+            Precio = request.Precio,
+            IdMoneda = request.IdMoneda,
+
+            // Toda clase nueva inicia activa.
+            IdEstadoClase = 1,
 
             FechaCreacion = DateTime.UtcNow
         };
@@ -296,18 +371,29 @@ public class ClaseService : IClaseService
                 "La categoría seleccionada no es válida.");
         }
 
-        if (request.DuracionMinutos.HasValue &&
-            request.DuracionMinutos <= 0)
+       
+
+        if (request.Precio <= 0)
         {
             throw new ArgumentException(
-                "La duración de la clase no es válida.");
+                "El precio de la clase debe ser mayor que cero.");
         }
 
-        if (request.Orden <= 0)
+        if (request.IdMoneda <= 0)
         {
             throw new ArgumentException(
-                "El orden de la clase no es válido.");
+                "La moneda seleccionada no es válida.");
         }
+
+        var monedas = await _monedaRepository.ObtenerTodosAsync();
+
+        if (!monedas.Any(x => x.IdMoneda == request.IdMoneda))
+        {
+            throw new ArgumentException(
+                "La moneda seleccionada no existe.");
+        }
+
+
 
         var idiomas = await _idiomaRepository.ObtenerTodosAsync();
 
@@ -332,10 +418,12 @@ public class ClaseService : IClaseService
             throw new ArgumentException(
                 "La categoría seleccionada no existe.");
         }
+        var duracion = await ObtenerDuracionClaseAsync();
 
         var actualizado = await _claseRepository.EditarAsync(
-            idClase,
-            request);
+     idClase,
+     request,
+     duracion);
 
         if (!actualizado)
         {
@@ -343,4 +431,6 @@ public class ClaseService : IClaseService
                 "La clase no fue encontrada.");
         }
     }
+
+
 }

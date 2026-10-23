@@ -1,4 +1,5 @@
-﻿namespace PortalProfesores.Domain.DTOs.Clases;
+﻿
+namespace PortalProfesores.Domain.DTOs.Clases;
 
 /// <summary>
 /// Representa la información editable de una clase.
@@ -17,7 +18,13 @@ public class EditarClaseRequestDto
 
     public string? UrlVideo { get; set; }
 
-    public int? DuracionMinutos { get; set; }
+    /// <summary>
+    /// Precio actualizado de la clase en la moneda seleccionada.
+    /// </summary>
+    public decimal Precio { get; set; }
 
-    public int Orden { get; set; }
+    /// <summary>
+    /// Identificador de la moneda del catálogo Moneda.
+    /// </summary>
+    public long IdMoneda { get; set; }
 }

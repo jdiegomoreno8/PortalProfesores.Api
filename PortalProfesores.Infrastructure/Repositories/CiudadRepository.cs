@@ -27,4 +27,16 @@ public class CiudadRepository : ICiudadRepository
             .OrderBy(x => x.Nombre)
             .ToListAsync();
     }
+
+
+    /// <summary>
+    /// Obtiene una ciudad por su identificador.
+    /// </summary>
+    public async Task<Ciudad?> ObtenerPorIdAsync(long idCiudad)
+    {
+        return await _context.Ciudades
+            .AsNoTracking()
+            .FirstOrDefaultAsync(x => x.IdCiudad == idCiudad);
+    }
+
 }

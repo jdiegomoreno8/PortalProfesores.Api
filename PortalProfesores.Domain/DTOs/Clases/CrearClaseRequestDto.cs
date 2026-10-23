@@ -1,4 +1,5 @@
-﻿namespace PortalProfesores.Domain.DTOs.Clases;
+﻿
+namespace PortalProfesores.Domain.DTOs.Clases;
 
 /// <summary>
 /// Información necesaria para crear una clase.
@@ -19,5 +20,13 @@ public class CrearClaseRequestDto
 
     public int? DuracionMinutos { get; set; }
 
-    public int Orden { get; set; }
+    /// <summary>
+    /// Precio de la clase en la moneda seleccionada.
+    /// </summary>
+    public decimal Precio { get; set; }
+
+    /// <summary>
+    /// Identificador de la moneda del catálogo Moneda.
+    /// </summary>
+    public long IdMoneda { get; set; }
 }

@@ -29,4 +29,18 @@ public interface IProfesorService
     Task ActualizarPerfilAsync(
         long idUsuario,
         ActualizarProfesorRequestDto request);
+
+    /// <summary>
+    /// Cambia la fotografía de perfil del profesor autenticado.
+    /// </summary>
+    /// <param name="idUsuario">
+    /// Identificador del usuario autenticado.
+    /// </param>
+    /// <param name="archivo">
+    /// Contenido de la fotografía PNG.
+    /// </param>
+    Task CambiarFotoPerfilAsync(
+        long idUsuario,
+        Stream archivo);
+
 }

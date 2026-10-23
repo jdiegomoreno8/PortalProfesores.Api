@@ -22,6 +22,13 @@ public class ClaseListadoDto
     public string EstadoClase { get; set; } = string.Empty;
 
     public int? DuracionMinutos { get; set; }
+    public decimal Precio { get; set; }
+
+    public long IdMoneda { get; set; }
+
+    public string Moneda { get; set; } = string.Empty;
+
+    public string CodigoMoneda { get; set; } = string.Empty;
 
     public int Orden { get; set; }
 

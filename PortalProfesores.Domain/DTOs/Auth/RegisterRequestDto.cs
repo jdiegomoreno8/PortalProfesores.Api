@@ -1,4 +1,5 @@
-﻿namespace PortalProfesores.Domain.DTOs.Auth;
+﻿
+namespace PortalProfesores.Domain.DTOs.Auth;
 
 /// <summary>
 /// Información requerida para registrar un estudiante.
@@ -17,4 +18,6 @@ public class RegisterRequestDto
     public string CorreoElectronico { get; set; } = string.Empty;
 
     public string Clave { get; set; } = string.Empty;
+
+    public long IdNivel { get; set; }
 }

@@ -40,6 +40,18 @@ public class Clase
 
     public long? UsuarioActualizacion { get; set; }
 
+    /// <summary>
+    /// Precio de la clase en la moneda configurada.
+    /// </summary>
+    public decimal Precio { get; set; }
+
+    /// <summary>
+    /// Identificador de la moneda asociada a la clase.
+    /// </summary>
+    public long IdMoneda { get; set; }
+
+    public Moneda? Moneda { get; set; }
+
 
     // Relaciones
 
@@ -57,4 +69,9 @@ public class Clase
 
     public ICollection<Sesion> Sesiones { get; set; }
     = new List<Sesion>();
+
+
+  
+
+
 }

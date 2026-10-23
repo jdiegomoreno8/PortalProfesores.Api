@@ -12,7 +12,7 @@ public interface IAdministradorService
     /// <summary>
     /// Crea un nuevo profesor y sus entidades relacionadas.
     /// </summary>
-    Task CrearProfesorAsync(CrearProfesorRequestDto request);
+    Task<long> CrearProfesorAsync(CrearProfesorRequestDto request);
     Task<IEnumerable<ProfesorListadoDto>> ObtenerProfesoresAsync();
 
     Task<ProfesorDetalleDto?> ObtenerDetalleProfesorAsync(long idProfesor);
@@ -31,4 +31,35 @@ public interface IAdministradorService
     Task CambiarEstadoEstudianteAsync(
         long idEstudiante,
         CambiarEstadoEstudianteRequestDto request);
+
+    /// <summary>
+    /// Permite al administrador reemplazar la fotografía
+    /// de perfil de un profesor.
+    /// </summary>
+    Task CambiarFotoPerfilProfesorAsync(
+        long idProfesor,
+        Stream archivo,
+        string nombreArchivo,
+        string contentType);
+
+    Task EliminarFotoPerfilProfesorAsync(long idProfesor);
+
+
+    /// <summary>
+    /// Permite al administrador cambiar la fotografía
+    /// de perfil de un estudiante.
+    /// </summary>
+    Task CambiarFotoPerfilEstudianteAsync(
+        long idEstudiante,
+        Stream archivo,
+        string nombreArchivo,
+        string contentType);
+
+    /// <summary>
+    /// Permite al administrador eliminar la fotografía
+    /// de perfil de un estudiante.
+    /// </summary>
+    Task EliminarFotoPerfilEstudianteAsync(long idEstudiante);
+
+
 }

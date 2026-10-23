@@ -29,7 +29,11 @@ public class ClaseRepository : IClaseRepository
             .Include(x => x.Nivel)
             .Include(x => x.Categoria)
             .Include(x => x.EstadoClase)
-            .OrderBy(x => x.Orden)
+            .Include(x => x.Moneda)
+            .OrderBy(x => x.IdIdioma)
+            .ThenBy(x => x.IdNivel)
+            .ThenBy(x => x.IdCategoria)
+            .ThenBy(x => x.Orden)
             .ThenBy(x => x.Titulo)
             .ToListAsync();
     }
@@ -45,6 +49,7 @@ public class ClaseRepository : IClaseRepository
             .Include(x => x.Nivel)
             .Include(x => x.Categoria)
             .Include(x => x.EstadoClase)
+            .Include(x => x.Moneda)
             .FirstOrDefaultAsync(x => x.IdClase == idClase);
     }
 
@@ -105,7 +110,8 @@ public class ClaseRepository : IClaseRepository
     /// </summary>
     public async Task<bool> EditarAsync(
         long idClase,
-        EditarClaseRequestDto request)
+        EditarClaseRequestDto request,
+         int duracionMinutos)
     {
         var clase = await _context.Clases
             .FirstOrDefaultAsync(x => x.IdClase == idClase);
@@ -118,18 +124,44 @@ public class ClaseRepository : IClaseRepository
         clase.IdIdioma = request.IdIdioma;
         clase.IdNivel = request.IdNivel;
         clase.IdCategoria = request.IdCategoria;
-
         clase.Titulo = request.Titulo;
         clase.Descripcion = request.Descripcion;
         clase.UrlVideo = request.UrlVideo;
-
-        clase.DuracionMinutos = request.DuracionMinutos;
-        clase.Orden = request.Orden;
-
+        clase.DuracionMinutos = duracionMinutos;
+        clase.Precio = request.Precio;
+        clase.IdMoneda = request.IdMoneda;
         clase.FechaActualizacion = DateTime.UtcNow;
 
         await _context.SaveChangesAsync();
 
         return true;
+    }
+
+    public async Task<int> ObtenerSiguienteOrdenAsync(
+    long idIdioma,
+    long idNivel,
+    long idCategoria)
+    {
+        var ultimoOrden = await _context.Clases
+            .Where(x =>
+                x.IdIdioma == idIdioma &&
+                x.IdNivel == idNivel &&
+                x.IdCategoria == idCategoria)
+            .Select(x => (int?)x.Orden)
+            .MaxAsync();
+
+        return (ultimoOrden ?? 0) + 1;
+    }
+
+
+    public async Task<bool> ProfesorPuedeImpartirClaseAsync(
+    long idProfesor,
+    long idClase)
+    {
+        return await _context.ProfesoresClases
+            .AsNoTracking()
+            .AnyAsync(x =>
+                x.IdProfesor == idProfesor &&
+                x.IdClase == idClase);
     }
 }

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PortalProfesores.Domain.DTOs.Estudiantes;
 using PortalProfesores.Domain.Interfaces.Services;
@@ -6,11 +7,8 @@ using PortalProfesores.Domain.Interfaces.Services;
 namespace PortalProfesores.Api.Controllers;
 
 /// <summary>
-/// Expone las operaciones relacionadas con la consulta
-/// de estudiantes.
-///
-/// Este controlador recibe las solicitudes HTTP y delega
-/// la lógica de negocio al EstudianteService.
+/// Expone las operaciones administrativas relacionadas
+/// con la consulta y actualización de estudiantes.
 /// </summary>
 [ApiController]
 [Authorize(Roles = "Administrador")]
@@ -19,13 +17,6 @@ public class EstudianteController : ControllerBase
 {
     private readonly IEstudianteService _estudianteService;
 
-    /// <summary>
-    /// Inicializa el controlador de estudiantes.
-    /// </summary>
-    /// <param name="estudianteService">
-    /// Servicio encargado de la lógica de negocio
-    /// relacionada con estudiantes.
-    /// </param>
     public EstudianteController(
         IEstudianteService estudianteService)
     {
@@ -33,138 +24,109 @@ public class EstudianteController : ControllerBase
     }
 
     /// <summary>
-    /// Obtiene el listado de estudiantes
-    /// para la gestión administrativa.
-    ///
-    /// El endpoint está protegido y únicamente puede
-    /// ser consultado por un usuario con rol Administrador.
+    /// Obtiene el listado de estudiantes registrados.
     /// </summary>
-    /// <returns>
-    /// Listado de estudiantes registrados.
-    /// </returns>
     [HttpGet]
+    [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IActionResult> ObtenerEstudiantes()
     {
         var estudiantes =
-            await _estudianteService
-                .ObtenerEstudiantesAsync();
+            await _estudianteService.ObtenerEstudiantesAsync();
 
-        return Ok(estudiantes);
+        return Ok(new
+        {
+            success = true,
+            statusCode = StatusCodes.Status200OK,
+            message = "Estudiantes consultados correctamente.",
+            data = estudiantes
+        });
     }
 
     /// <summary>
-    /// Obtiene el detalle completo de un estudiante.
-    ///
-    /// El endpoint está protegido y únicamente puede
-    /// ser consultado por un usuario con rol Administrador.
+    /// Obtiene el detalle de un estudiante.
     /// </summary>
-    /// <param name="idEstudiante">
-    /// Identificador único del estudiante.
-    /// </param>
-    /// <returns>
-    /// Información detallada del estudiante si existe.
-    /// </returns>
     [HttpGet("{idEstudiante:long}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> ObtenerDetalleEstudiante(
         long idEstudiante)
     {
-        // Validación básica del identificador.
-        // Evita realizar una consulta innecesaria a la BD
-        // cuando el ID recibido no es válido.
         if (idEstudiante <= 0)
         {
             return BadRequest(new
             {
-                Mensaje =
-                    "El identificador del estudiante no es válido."
+                success = false,
+                statusCode = StatusCodes.Status400BadRequest,
+                message = "El identificador del estudiante no es válido."
             });
         }
 
-        // El controlador delega la consulta al servicio.
-        // La lógica de negocio permanece fuera del Controller.
         var estudiante =
             await _estudianteService
                 .ObtenerDetalleEstudianteAsync(idEstudiante);
 
-        // Si el servicio no encuentra el estudiante,
-        // devolvemos HTTP 404 Not Found.
         if (estudiante is null)
         {
             return NotFound(new
             {
-                Mensaje =
-                    "El estudiante no fue encontrado."
+                success = false,
+                statusCode = StatusCodes.Status404NotFound,
+                message = "El estudiante no fue encontrado."
             });
         }
 
-        // Si existe, devolvemos la información
-        // mediante HTTP 200 OK.
-        return Ok(estudiante);
+        return Ok(new
+        {
+            success = true,
+            statusCode = StatusCodes.Status200OK,
+            message = "Estudiante consultado correctamente.",
+            data = estudiante
+        });
     }
 
     /// <summary>
     /// Actualiza la información personal y académica
     /// de un estudiante.
-    ///
-    /// El endpoint está protegido y únicamente puede
-    /// ser utilizado por un usuario con rol Administrador.
     /// </summary>
-    /// <param name="idEstudiante">
-    /// Identificador único del estudiante.
-    /// </param>
-    /// <param name="request">
-    /// Información actualizada del estudiante.
-    /// </param>
-    /// <returns>
-    /// HTTP 204 si la actualización fue exitosa.
-    /// HTTP 400 si el identificador no es válido.
-    /// HTTP 404 si el estudiante no existe.
-    /// </returns>
     [HttpPut("{idEstudiante:long}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> EditarEstudiante(
         long idEstudiante,
         [FromBody] EditarEstudianteRequest request)
     {
-        // -------------------------------------------------
-        // VALIDACIÓN DEL IDENTIFICADOR
-        // -------------------------------------------------
-
         if (idEstudiante <= 0)
         {
             return BadRequest(new
             {
-                Mensaje =
-                    "El identificador del estudiante no es válido."
+                success = false,
+                statusCode = StatusCodes.Status400BadRequest,
+                message = "El identificador del estudiante no es válido."
             });
         }
 
-        // -------------------------------------------------
-        // ACTUALIZAR ESTUDIANTE
-        // -------------------------------------------------
-
         var actualizado =
-            await _estudianteService
-                .EditarEstudianteAsync(
-                    idEstudiante,
-                    request);
-
-        // -------------------------------------------------
-        // ESTUDIANTE NO ENCONTRADO
-        // -------------------------------------------------
+            await _estudianteService.EditarEstudianteAsync(
+                idEstudiante,
+                request);
 
         if (!actualizado)
         {
             return NotFound(new
             {
-                Mensaje =
-                    "El estudiante no fue encontrado."
+                success = false,
+                statusCode = StatusCodes.Status404NotFound,
+                message = "El estudiante no fue encontrado."
             });
         }
 
-        // -------------------------------------------------
-        // ACTUALIZACIÓN EXITOSA
-        // -------------------------------------------------
-
-        return NoContent();
+        return Ok(new
+        {
+            success = true,
+            statusCode = StatusCodes.Status200OK,
+            message = "Estudiante actualizado correctamente."
+        });
     }
 }

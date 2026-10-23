@@ -12,12 +12,23 @@ namespace PortalProfesores.Infrastructure.Services;
 public class ProfesorService : IProfesorService
 {
     private readonly IUsuarioRepository _usuarioRepository;
+    private readonly IProfesorDetalleRepository _profesorDetalleRepository;
+    private readonly IFotoPerfilStorageService _fotoPerfilStorageService;
+    private readonly ICiudadRepository _ciudadRepository;
 
     public ProfesorService(
-        IUsuarioRepository usuarioRepository)
+            IUsuarioRepository usuarioRepository,
+    IProfesorDetalleRepository profesorDetalleRepository,
+    IFotoPerfilStorageService fotoPerfilStorageService,
+    ICiudadRepository ciudadRepository)
     {
         _usuarioRepository = usuarioRepository;
+        _profesorDetalleRepository = profesorDetalleRepository;
+        _fotoPerfilStorageService = fotoPerfilStorageService;
+        _ciudadRepository = ciudadRepository;
+
     }
+
 
     /// <summary>
     /// Obtiene la información del profesor autenticado.
@@ -25,30 +36,126 @@ public class ProfesorService : IProfesorService
     public async Task<ProfesorPerfilResponseDto> ObtenerPerfilAsync(
         long idUsuario)
     {
-        var usuario = await _usuarioRepository.ObtenerPorIdAsync(idUsuario);
+        var usuario = await _usuarioRepository
+            .ObtenerPorIdAsync(idUsuario);
 
         if (usuario == null)
         {
-            throw new Exception("No se encontró la información del profesor.");
+            throw new NotFoundException(
+                "No se encontró la información del profesor.");
         }
+
+        if (usuario.Persona == null)
+        {
+            throw new NotFoundException(
+                "No se encontró la información personal del profesor.");
+        }
+
+        var persona = usuario.Persona;
+
+        var profesorDetalle =
+            await _profesorDetalleRepository
+                .ObtenerPorPersonaAsync(persona.IdPersona);
 
         return new ProfesorPerfilResponseDto
         {
             IdUsuario = usuario.IdUsuario,
-            Nombres = usuario.Persona.Nombres,
-            Apellidos = usuario.Persona.Apellidos,
-            CorreoElectronico = usuario.Persona.CorreoElectronico,
+            Nombres = persona.Nombres,
+            Apellidos = persona.Apellidos,
+            CorreoElectronico = persona.CorreoElectronico,
+            Telefono = persona.Telefono,
+            FechaNacimiento = persona.FechaNacimiento,
+            IdCiudad = persona.IdCiudad,
+            Ciudad = persona.Ciudad?.Nombre,
             Estado = usuario.EstadoUsuario.Nombre,
-            FechaIngreso = usuario.Persona.FechaIngreso
+            FechaIngreso = persona.FechaIngreso,
+            FotoPerfilUrl = profesorDetalle?.FotoPerfilUrl
         };
     }
+
+
+
+
+    /// <summary>
+    /// Foto de perfil
+    /// </summary>
+    public async Task CambiarFotoPerfilAsync(
+        long idUsuario,
+        Stream archivo)
+    {
+        var usuario = await _usuarioRepository
+            .ObtenerPorIdAsync(idUsuario);
+
+        if (usuario == null || usuario.Persona == null)
+        {
+            throw new NotFoundException(
+                "No se encontró la información personal del profesor.");
+        }
+
+        var profesorDetalle =
+            await _profesorDetalleRepository
+                .ObtenerPorPersonaAsync(usuario.Persona.IdPersona);
+
+        if (profesorDetalle == null)
+        {
+            throw new NotFoundException(
+                "No se encontró el perfil del profesor.");
+        }
+
+        var rutaFotoAnterior = profesorDetalle.FotoPerfilUrl;
+
+        var nombreProfesor =
+            $"{usuario.Persona.Nombres} {usuario.Persona.Apellidos}";
+
+        var nuevaFotoPerfilUrl =
+            await _fotoPerfilStorageService.GuardarAsync(
+                archivo,
+                nombreProfesor,
+                "profesores");
+
+        try
+        {
+            profesorDetalle.FotoPerfilUrl = nuevaFotoPerfilUrl;
+
+            await _profesorDetalleRepository
+                .ActualizarAsync(profesorDetalle);
+        }
+        catch
+        {
+            // Si falla la actualización, intentamos eliminar
+            // el archivo nuevo para evitar archivos huérfanos.
+            try
+            {
+                await _fotoPerfilStorageService.EliminarAsync(
+                    nuevaFotoPerfilUrl,
+                    "profesores");
+            }
+            catch
+            {
+                // No ocultamos la excepción original.
+            }
+
+            throw;
+        }
+
+        // La base de datos ya apunta a la nueva fotografía.
+        // Eliminamos la anterior únicamente después de actualizar.
+        if (!string.IsNullOrWhiteSpace(rutaFotoAnterior))
+        {
+            await _fotoPerfilStorageService.EliminarAsync(
+                rutaFotoAnterior,
+                "profesores");
+        }
+    }
+
+
 
     /// <summary>
     /// Actualiza la información del profesor.
     /// </summary>
     public async Task ActualizarPerfilAsync(
-       long idUsuario,
-       ActualizarProfesorRequestDto request)
+        long idUsuario,
+        ActualizarProfesorRequestDto request)
     {
         // Validar nombres.
         if (string.IsNullOrWhiteSpace(request.Nombres))
@@ -57,7 +164,7 @@ public class ProfesorService : IProfesorService
                 "Debe ingresar el nombre.");
         }
 
-        if (request.Nombres.Length > 200)
+        if (request.Nombres.Trim().Length > 200)
         {
             throw new ArgumentException(
                 "El nombre no puede superar los 200 caracteres.");
@@ -70,7 +177,7 @@ public class ProfesorService : IProfesorService
                 "Debe ingresar los apellidos.");
         }
 
-        if (request.Apellidos.Length > 200)
+        if (request.Apellidos.Trim().Length > 200)
         {
             throw new ArgumentException(
                 "Los apellidos no pueden superar los 200 caracteres.");
@@ -89,21 +196,29 @@ public class ProfesorService : IProfesorService
                 "El correo electrónico no es válido.");
         }
 
-        //Validad ciudad
+        // Validar ciudad.
         if (request.IdCiudad == null)
         {
             throw new ArgumentException(
                 "Debe seleccionar una ciudad.");
         }
 
-        //Fecha de nacimiento
+        var ciudad = await _ciudadRepository
+    .ObtenerPorIdAsync(request.IdCiudad.Value);
+
+        if (ciudad == null)
+        {
+            throw new ArgumentException(
+                "La ciudad seleccionada no existe.");
+        }
+
+        // Validar fecha de nacimiento.
         if (request.FechaNacimiento == null)
         {
             throw new ArgumentException(
                 "Debe ingresar la fecha de nacimiento.");
         }
 
-        //Validación fecha nacimiento
         if (request.FechaNacimiento > DateOnly.FromDateTime(DateTime.Today))
         {
             throw new ArgumentException(
@@ -112,47 +227,46 @@ public class ProfesorService : IProfesorService
 
         // Validar teléfono.
         if (!string.IsNullOrWhiteSpace(request.Telefono)
-            && request.Telefono.Length > 60)
+            && request.Telefono.Trim().Length > 60)
         {
             throw new ArgumentException(
-                "El teléfono no puede superar los 30 caracteres.");
+                "El teléfono no puede superar los 60 caracteres.");
         }
 
-
-
         // Verificar que el correo no pertenezca a otro usuario.
+        var correo = request.CorreoElectronico.Trim();
+
         if (await _usuarioRepository.ExisteCorreoAsync(
-            request.CorreoElectronico,
+            correo,
             idUsuario))
         {
             throw new ConflictException(
                 "El correo electrónico ya se encuentra registrado.");
         }
 
-        var usuario = await _usuarioRepository.ObtenerPorIdAsync(idUsuario);
+        var usuario = await _usuarioRepository
+            .ObtenerPorIdAsync(idUsuario);
 
         if (usuario == null)
         {
-            throw new Exception(
+            throw new NotFoundException(
                 "No se encontró la información del profesor.");
         }
 
+        if (usuario.Persona == null)
+        {
+            throw new NotFoundException(
+                "No se encontró la información personal del profesor.");
+        }
+
         usuario.Persona.Nombres = request.Nombres.Trim();
-
         usuario.Persona.Apellidos = request.Apellidos.Trim();
-
-        usuario.Persona.CorreoElectronico =
-            request.CorreoElectronico.Trim();
-
-        usuario.Persona.Telefono =
-            request.Telefono.Trim();
-
-        usuario.Persona.FechaNacimiento =
-            request.FechaNacimiento;
-
-        //usuario.Persona.IdCiudad =
-        //    request.IdCiudad;
+        usuario.Persona.CorreoElectronico = correo;
+        usuario.Persona.Telefono = request.Telefono?.Trim();
+        usuario.Persona.FechaNacimiento = request.FechaNacimiento.Value;
+        usuario.Persona.IdCiudad = request.IdCiudad.Value;
 
         await _usuarioRepository.ActualizarAsync(usuario);
     }
+
 }

@@ -33,7 +33,7 @@ public class PortalProfesoresDbContext : DbContext
 
     // Catálogo de niveles académicos.
     // Es utilizado actualmente por EstudianteDetalle
-    // y posteriormente será utilizado por Microclase.
+    // y posteriormente será utilizado por la Sesion.
     public DbSet<Nivel> Niveles => Set<Nivel>();
 
     public DbSet<Idioma> Idiomas => Set<Idioma>();
@@ -45,6 +45,32 @@ public class PortalProfesoresDbContext : DbContext
 
     public DbSet<Sesion> Sesiones => Set<Sesion>();
     public DbSet<EstudianteDetalle> EstudiantesDetalle => Set<EstudianteDetalle>();
+
+    // Disponibilidad de los profesores.
+    public DbSet<Disponibilidad> Disponibilidades => Set<Disponibilidad>();
+
+    public DbSet<EstadoDisponibilidad> EstadosDisponibilidad
+        => Set<EstadoDisponibilidad>();
+
+    public DbSet<ZonaHoraria> ZonasHorarias => Set<ZonaHoraria>();
+
+    // Reservas y sus estados.
+    public DbSet<Reserva> Reservas => Set<Reserva>();
+
+    public DbSet<EstadoReserva> EstadosReserva => Set<EstadoReserva>();
+
+    // Pagos y sus catálogos.
+    public DbSet<Pago> Pagos => Set<Pago>();
+
+    public DbSet<EstadoPago> EstadosPago => Set<EstadoPago>();
+
+    public DbSet<MetodoPago> MetodosPago => Set<MetodoPago>();
+
+    public DbSet<Moneda> Monedas => Set<Moneda>();
+    public DbSet<Configuracion> Configuraciones => Set<Configuracion>();
+
+    public DbSet<ProfesorClase> ProfesoresClases => Set<ProfesorClase>();
+
 
     #endregion
 

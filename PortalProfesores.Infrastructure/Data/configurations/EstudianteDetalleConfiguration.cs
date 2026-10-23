@@ -20,11 +20,11 @@ public class EstudianteDetalleConfiguration
         // ---------------------------------------------------------
         // CLAVE PRIMARIA
         // ---------------------------------------------------------
-
         builder.HasKey(x => x.IdEstudiante);
 
         builder.Property(x => x.IdEstudiante)
-               .HasColumnName("IdEstudiante");
+               .HasColumnName("IdEstudiante")
+               .ValueGeneratedOnAdd();
 
         // ---------------------------------------------------------
         // RELACIÓN CON PERSONA
@@ -50,7 +50,8 @@ public class EstudianteDetalleConfiguration
         // El nivel puede ser NULL porque un estudiante
         // puede registrarse antes de definir su nivel.
         builder.Property(x => x.IdNivel)
-               .HasColumnName("IdNivel");
+        .HasColumnName("IdNivel")
+        .IsRequired();
 
         builder.HasOne(x => x.Nivel)
                .WithMany()
@@ -66,6 +67,15 @@ public class EstudianteDetalleConfiguration
 
         builder.Property(x => x.Observaciones)
                .HasColumnType("nvarchar(max)");
+
+        // ---------------------------------------------------------
+        // Foto url
+        // ---------------------------------------------------------
+        builder.Property(x => x.FotoPerfilUrl)
+            .HasColumnName("FotoPerfilUrl")
+            .HasMaxLength(500)
+            .IsRequired(false);
+
 
         // ---------------------------------------------------------
         // AUDITORÍA

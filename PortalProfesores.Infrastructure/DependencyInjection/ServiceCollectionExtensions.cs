@@ -36,6 +36,8 @@ public static class ServiceCollectionExtensions
 
         services.AddScoped<ICategoriaRepository, CategoriaRepository>();
 
+        services.AddScoped<IMonedaRepository, MonedaRepository>();
+
         services.AddScoped<IProfesorRepository, ProfesorRepository>();
 
         // Repositorio encargado del acceso a los datos de los estudiantes.
@@ -43,12 +45,13 @@ public static class ServiceCollectionExtensions
 
         services.AddScoped<IClaseRepository, ClaseRepository>();
 
-       
+        services.AddScoped<IReservaRepository, ReservaRepository>();
 
+        services.AddScoped<IPagoRepository, PagoRepository>();
 
+        services.AddScoped<IDisponibilidadRepository, DisponibilidadRepository>();
 
-
-
+        services.AddScoped<IConfiguracionRepository, ConfiguracionRepository>();
 
         #endregion
 
@@ -73,6 +76,17 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IEstudianteService, EstudianteService>();
 
         services.AddScoped<IClaseService, ClaseService>();
+
+        services.AddScoped<IDisponibilidadService, DisponibilidadService>();
+
+        services.AddScoped<IConfiguracionService, ConfiguracionService>();
+
+
+        services.AddScoped<IReservaService, ReservaService>();
+
+        services.AddScoped<IPagoService, PagoService>();
+
+        services.AddScoped< IFotoPerfilStorageService, FotoPerfilStorageService>();
 
         #endregion
 

@@ -23,7 +23,7 @@ public class EstudianteDetalle
     /// Nivel académico actual del estudiante.
     /// Se relaciona con el catálogo Nivel.
     /// </summary>
-    public long? IdNivel { get; set; }
+    public long IdNivel { get; set; }
 
     /// <summary>
     /// Objetivo principal que tiene el estudiante
@@ -36,6 +36,9 @@ public class EstudianteDetalle
     /// con el perfil o proceso del estudiante.
     /// </summary>
     public string? Observaciones { get; set; }
+    /// <summary>
+    /// Foto de perfil url
+    public string? FotoPerfilUrl { get; set; }
 
     /// <summary>
     /// Fecha en la que se registra el estudiante.

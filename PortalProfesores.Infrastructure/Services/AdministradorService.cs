@@ -24,19 +24,22 @@ public class AdministradorService : IAdministradorService
     private readonly IPersonaRepository _personaRepository;
     private readonly IUsuarioRepository _usuarioRepository;
     private readonly IProfesorDetalleRepository _profesorDetalleRepository;
-    private readonly IPasswordService _passwordService;
-    private readonly PortalProfesoresDbContext _context;
+    private readonly IPasswordService _passwordService;    
     private readonly IProfesorRepository _profesorRepository;
     private readonly IEstudianteRepository _estudianteRepository;
+    private readonly PortalProfesoresDbContext _context;
+    private readonly IFotoPerfilStorageService _fotoPerfilStorageService;
+
 
     public AdministradorService(
-        IPersonaRepository personaRepository,
-        IUsuarioRepository usuarioRepository,
-        IProfesorDetalleRepository profesorDetalleRepository,
-        IProfesorRepository profesorRepository,
-        IEstudianteRepository estudianteRepository,
-        IPasswordService passwordService,
-        PortalProfesoresDbContext context)
+    IPersonaRepository personaRepository,
+    IUsuarioRepository usuarioRepository,
+    IProfesorDetalleRepository profesorDetalleRepository,
+    IProfesorRepository profesorRepository,
+    IEstudianteRepository estudianteRepository,
+    IPasswordService passwordService,
+    PortalProfesoresDbContext context,
+    IFotoPerfilStorageService fotoPerfilStorageService)
     {
         _personaRepository = personaRepository;
         _usuarioRepository = usuarioRepository;
@@ -45,9 +48,11 @@ public class AdministradorService : IAdministradorService
         _estudianteRepository = estudianteRepository;
         _passwordService = passwordService;
         _context = context;
+        _fotoPerfilStorageService = fotoPerfilStorageService;
     }
 
-    public async Task CrearProfesorAsync(CrearProfesorRequestDto request)
+    public async Task<long> CrearProfesorAsync(
+     CrearProfesorRequestDto request)
     {
         ValidarRequest(request);
 
@@ -131,9 +136,15 @@ public class AdministradorService : IAdministradorService
 
             // EF Core resuelve las claves Identity y las
             // relaciones entre las entidades al guardar.
+
             await _context.SaveChangesAsync();
 
+            long idProfesor = profesorDetalle.IdProfesor;
+
             await transaction.CommitAsync();
+
+            return idProfesor;
+
         }
         catch
         {
@@ -363,6 +374,247 @@ public class AdministradorService : IAdministradorService
             throw;
         }
     }
+
+
+
+    /// <summary>
+    /// Permite al administrador cambiar la fotografía
+    /// de perfil de un profesor.
+    /// </summary>
+    public async Task CambiarFotoPerfilProfesorAsync(
+        long idProfesor,
+        Stream archivo,
+        string nombreArchivo,
+        string contentType)
+    {
+        if (idProfesor <= 0)
+        {
+            throw new ArgumentException(
+                "El identificador del profesor no es válido.");
+        }
+
+        var profesorDetalle =
+            await _profesorDetalleRepository.ObtenerPorIdAsync(
+                idProfesor);
+
+        if (profesorDetalle is null)
+        {
+            throw new KeyNotFoundException(
+                "El profesor no fue encontrado.");
+        }
+
+        if (profesorDetalle.Persona is null)
+        {
+            throw new InvalidOperationException(
+                "El profesor no tiene una persona asociada.");
+        }
+
+        var rutaFotoAnterior = profesorDetalle.FotoPerfilUrl;
+
+        var nombreProfesor =
+            $"{profesorDetalle.Persona.Nombres} " +
+            $"{profesorDetalle.Persona.Apellidos}";
+
+        var nuevaFotoPerfilUrl =
+            await _fotoPerfilStorageService.GuardarAsync(
+                archivo,
+                nombreProfesor,
+                "profesores");
+
+        try
+        {
+            profesorDetalle.FotoPerfilUrl = nuevaFotoPerfilUrl;
+
+            await _profesorDetalleRepository.ActualizarAsync(
+                profesorDetalle);
+        }
+        catch
+        {
+            // Si falla la actualización, intentamos eliminar
+            // el archivo nuevo para evitar archivos huérfanos.
+            await _fotoPerfilStorageService.EliminarAsync(
+                nuevaFotoPerfilUrl,
+                "profesores");
+
+            throw;
+        }
+
+        // La nueva foto ya quedó registrada en la base de datos.
+        // Ahora eliminamos el archivo anterior.
+        if (!string.IsNullOrWhiteSpace(rutaFotoAnterior))
+        {
+            await _fotoPerfilStorageService.EliminarAsync(
+                rutaFotoAnterior,
+                "profesores");
+        }
+    }
+
+
+    /// <summary>
+    /// Elimina la fotografía de perfil de un profesor.
+    /// </summary>
+    public async Task EliminarFotoPerfilProfesorAsync(long idProfesor)
+    {
+        if (idProfesor <= 0)
+        {
+            throw new ArgumentException(
+                "El identificador del profesor no es válido.");
+        }
+
+        var profesorDetalle =
+            await _profesorDetalleRepository.ObtenerPorIdAsync(idProfesor);
+
+        if (profesorDetalle is null)
+        {
+            throw new KeyNotFoundException(
+                "El profesor no fue encontrado.");
+        }
+
+        var rutaFotoAnterior = profesorDetalle.FotoPerfilUrl;
+
+        if (string.IsNullOrWhiteSpace(rutaFotoAnterior))
+        {
+            return;
+        }
+
+        // Primero se actualiza la referencia en la base de datos.
+        profesorDetalle.FotoPerfilUrl = null;
+
+        await _profesorDetalleRepository.ActualizarAsync(profesorDetalle);
+
+        // Después se elimina el archivo físico.
+        await _fotoPerfilStorageService.EliminarAsync(
+            rutaFotoAnterior,
+            "profesores");
+    }
+
+
+
+    /// <summary>
+    /// Permite al administrador cambiar la fotografía
+    /// de perfil de un estudiante.
+    /// </summary>
+    public async Task CambiarFotoPerfilEstudianteAsync(
+        long idEstudiante,
+        Stream archivo,
+        string nombreArchivo,
+        string contentType)
+    {
+        if (idEstudiante <= 0)
+        {
+            throw new ArgumentException(
+                "El identificador del estudiante no es válido.");
+        }
+
+        var estudiante =
+            await _estudianteRepository.ObtenerPorIdAsync(
+                idEstudiante);
+
+        if (estudiante is null)
+        {
+            throw new KeyNotFoundException(
+                "El estudiante no fue encontrado.");
+        }
+
+        var rutaFotoAnterior = estudiante.FotoPerfilUrl;
+
+        var nombreEstudiante = $"estudiante_{idEstudiante}";
+
+        var nuevaFotoPerfilUrl =
+            await _fotoPerfilStorageService.GuardarAsync(
+                archivo,
+                nombreEstudiante,
+                "estudiantes");
+
+        bool actualizado;
+
+        try
+        {
+            actualizado =
+                await _estudianteRepository.ActualizarFotoPerfilAsync(
+                    idEstudiante,
+                    nuevaFotoPerfilUrl);
+        }
+        catch
+        {
+            // Si falla la actualización, intentamos limpiar
+            // el archivo nuevo para evitar archivos huérfanos.
+            await _fotoPerfilStorageService.EliminarAsync(
+                nuevaFotoPerfilUrl,
+                "estudiantes");
+
+            throw;
+        }
+
+        if (!actualizado)
+        {
+            await _fotoPerfilStorageService.EliminarAsync(
+                nuevaFotoPerfilUrl,
+                "estudiantes");
+
+            throw new InvalidOperationException(
+                "No fue posible actualizar la fotografía del estudiante.");
+        }
+
+        // La nueva ruta ya quedó guardada en la base de datos.
+        // Ahora podemos eliminar la fotografía anterior.
+        if (!string.IsNullOrWhiteSpace(rutaFotoAnterior))
+        {
+            await _fotoPerfilStorageService.EliminarAsync(
+                rutaFotoAnterior,
+                "estudiantes");
+        }
+    }
+
+
+    /// <summary>
+    /// Elimina la fotografía de perfil de un estudiante.
+    /// </summary>
+    public async Task EliminarFotoPerfilEstudianteAsync(
+        long idEstudiante)
+    {
+        if (idEstudiante <= 0)
+        {
+            throw new ArgumentException(
+                "El identificador del estudiante no es válido.");
+        }
+
+        var estudiante =
+            await _estudianteRepository.ObtenerPorIdAsync(
+                idEstudiante);
+
+        if (estudiante is null)
+        {
+            throw new KeyNotFoundException(
+                "El estudiante no fue encontrado.");
+        }
+
+        var rutaFotoAnterior = estudiante.FotoPerfilUrl;
+
+        if (string.IsNullOrWhiteSpace(rutaFotoAnterior))
+        {
+            return;
+        }
+
+        // Primero se elimina la referencia en la base de datos.
+        var actualizado =
+            await _estudianteRepository.ActualizarFotoPerfilAsync(
+                idEstudiante,
+                null);
+
+        if (!actualizado)
+        {
+            throw new InvalidOperationException(
+                "No fue posible eliminar la fotografía del estudiante.");
+        }
+
+        // Después se elimina el archivo físico.
+        await _fotoPerfilStorageService.EliminarAsync(
+            rutaFotoAnterior,
+            "estudiantes");
+    }
+
+
 
     /// <summary>
     /// Cambia el estado de un profesor.

@@ -31,7 +31,10 @@ public class ProfesorDetalleDto
     public string? Presentacion { get; set; }
     public string? Experiencia { get; set; }
     public string? Biografia { get; set; }
+    public string? FotoPerfilUrl { get; set; }
+
 
     // Fechas relevantes
     public DateTime FechaIngreso { get; set; }
+
 }

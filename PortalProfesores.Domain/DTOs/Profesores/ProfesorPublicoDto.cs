@@ -19,4 +19,6 @@ public class ProfesorPublicoDto
     public string? Experiencia { get; set; }
 
     public string? Biografia { get; set; }
+
+    public string? FotoPerfilUrl { get; set; }
 }

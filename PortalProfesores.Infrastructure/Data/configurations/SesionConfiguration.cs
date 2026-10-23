@@ -12,45 +12,64 @@ public class SesionConfiguration
 {
     public void Configure(EntityTypeBuilder<Sesion> builder)
     {
-        builder.ToTable("Sesion");
+        builder.ToTable("Sesion", table =>
+        {
+            table.HasCheckConstraint(
+                "CK_Sesion_Fecha",
+                "[FechaFinReal] IS NULL OR " +
+                "[FechaInicioReal] IS NULL OR " +
+                "[FechaFinReal] > [FechaInicioReal]");
+        });
 
-        // Clave primaria
-        builder.HasKey(x => x.IdSesion);
+        builder.HasKey(s => s.IdSesion);
 
-        builder.Property(x => x.IdSesion)
-               .HasColumnName("IdSesion");
+        builder.Property(s => s.IdSesion)
+            .HasColumnName("IdSesion");
 
-        // Reserva
-        builder.Property(x => x.IdReserva)
-               .HasColumnName("IdReserva")
-               .IsRequired();
+        builder.Property(s => s.IdReserva)
+            .IsRequired();
 
-        // Clase
-        builder.Property(x => x.IdClase)
-               .HasColumnName("IdClase")
-               .IsRequired();
+        builder.Property(s => s.IdClase)
+            .IsRequired();
 
-        builder.HasOne(x => x.Clase)
-               .WithMany(x => x.Sesiones)
-               .HasForeignKey(x => x.IdClase)
-               .OnDelete(DeleteBehavior.Restrict);
+        builder.Property(s => s.FechaInicioReal)
+            .HasColumnType("datetime2");
 
-        // Información de la sesión
-        builder.Property(x => x.FechaInicioReal);
+        builder.Property(s => s.FechaFinReal)
+            .HasColumnType("datetime2");
 
-        builder.Property(x => x.FechaFinReal);
+        builder.Property(s => s.ObservacionesProfesor)
+            .HasColumnType("nvarchar(max)");
 
-        builder.Property(x => x.ObservacionesProfesor)
-               .HasColumnType("nvarchar(max)");
+        builder.Property(s => s.FechaCreacion)
+            .HasColumnType("datetime2")
+            .HasDefaultValueSql("GETDATE()")
+            .IsRequired();
 
-        // Auditoría
-        builder.Property(x => x.FechaCreacion)
-               .IsRequired();
+        builder.Property(s => s.UsuarioCreacion);
 
-        builder.Property(x => x.UsuarioCreacion);
+        builder.Property(s => s.FechaActualizacion)
+            .HasColumnType("datetime2");
 
-        builder.Property(x => x.FechaActualizacion);
+        builder.Property(s => s.UsuarioActualizacion);
 
-        builder.Property(x => x.UsuarioActualizacion);
+        builder.HasIndex(s => s.IdReserva)
+            .IsUnique()
+            .HasDatabaseName("UQ_Sesion_Reserva");
+
+        builder.HasIndex(s => s.IdClase)
+            .HasDatabaseName("IX_Sesion_IdClase");
+
+        builder.HasOne(s => s.Clase)
+            .WithMany(c => c.Sesiones)
+            .HasForeignKey(s => s.IdClase)
+            .OnDelete(DeleteBehavior.Restrict)
+            .HasConstraintName("FK_Sesion_Clase");
+
+        builder.HasOne(s => s.Reserva)
+            .WithOne(r => r.Sesion)
+            .HasForeignKey<Sesion>(s => s.IdReserva)
+            .OnDelete(DeleteBehavior.Restrict)
+            .HasConstraintName("FK_Sesion_Reserva");
     }
 }

@@ -28,7 +28,13 @@ public interface IClaseRepository
     /// </summary>
     Task<bool> EditarAsync(
         long idClase,
-        EditarClaseRequestDto request);
+        EditarClaseRequestDto request,
+        int duracionMinutos);
+
+    Task<int> ObtenerSiguienteOrdenAsync(
+      long idIdioma,
+      long idNivel,
+      long idCategoria);
     /// <summary>
     /// Suspende una clase existente.
     /// </summary>
@@ -38,4 +44,8 @@ public interface IClaseRepository
     /// Activa nuevamente una clase suspendida.
     /// </summary>
     Task<bool> ActivarAsync(long idClase);
+
+    Task<bool> ProfesorPuedeImpartirClaseAsync(
+    long idProfesor,
+    long idClase);
 }

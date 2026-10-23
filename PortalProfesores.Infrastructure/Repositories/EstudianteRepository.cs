@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using PortalProfesores.Domain.Exceptions;
 using PortalProfesores.Domain.DTOs.Estudiantes;
 using PortalProfesores.Domain.Interfaces.Repositories;
 using PortalProfesores.Infrastructure.Data;
@@ -129,6 +130,9 @@ public class EstudianteRepository : IEstudianteRepository
 
                 Observaciones =
                     estudiante.Observaciones,
+
+                FotoPerfilUrl =
+    estudiante.FotoPerfilUrl,
 
                 // -------------------------------------------------
                 // FECHA DE INGRESO
@@ -288,18 +292,32 @@ public class EstudianteRepository : IEstudianteRepository
         estudiante.Persona.IdCiudad =
             request.IdCiudad;
 
+
         // -------------------------------------------------
         // INFORMACIÓN ACADÉMICA
         // -------------------------------------------------
 
-        estudiante.IdNivel =
-            request.IdNivel;
+        if (request.IdNivel.HasValue)
+        {
+            var nivelExiste = await _context.Niveles
+                .AnyAsync(n =>
+                    n.IdNivel == request.IdNivel.Value);
+
+            if (!nivelExiste)
+            {
+                throw new ValidationException(
+                    "El nivel académico seleccionado no es válido.");
+            }
+
+            estudiante.IdNivel = request.IdNivel.Value;
+        }
 
         estudiante.ObjetivoAprendizaje =
             request.ObjetivoAprendizaje;
 
         estudiante.Observaciones =
             request.Observaciones;
+
 
         // -------------------------------------------------
         // GUARDAR CAMBIOS
@@ -341,4 +359,28 @@ public class EstudianteRepository : IEstudianteRepository
         return true;
     }
 
+
+    /// <summary>
+    /// Actualiza la ruta de la fotografía de perfil
+    /// del estudiante.
+    /// </summary>
+    public async Task<bool> ActualizarFotoPerfilAsync(
+        long idEstudiante,
+        string? fotoPerfilUrl)
+    {
+        var estudiante = await _context.EstudiantesDetalle
+            .FirstOrDefaultAsync(e =>
+                e.IdEstudiante == idEstudiante);
+
+        if (estudiante is null)
+        {
+            return false;
+        }
+
+        estudiante.FotoPerfilUrl = fotoPerfilUrl;
+
+        await _context.SaveChangesAsync();
+
+        return true;
+    }
 }

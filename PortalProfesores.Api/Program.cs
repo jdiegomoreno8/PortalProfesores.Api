@@ -2,29 +2,70 @@ using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-//using PortalProfesores.Api.Utilities;
-//using PortalProfesores.Domain.Interfaces.Services;
 using PortalProfesores.Infrastructure.Configuration;
 using PortalProfesores.Infrastructure.Data;
 using PortalProfesores.Infrastructure.DependencyInjection;
 using Microsoft.OpenApi.Models;
 using PortalProfesores.Domain.Interfaces.Services;
 using PortalProfesores.Infrastructure.Data.Seeds;
+using PortalProfesores.Infrastructure.BackgroundServices;
+using PortalProfesores.Infrastructure.Services.Pagos;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Registrar DbContext
 builder.Services.AddDbContext<PortalProfesoresDbContext>(options =>
-    options.UseSqlServer(
-        builder.Configuration.GetConnectionString("PortalProfesoresConnection")));
-
-// Registrar dependencias de la aplicación
+options.UseSqlServer(
+builder.Configuration.GetConnectionString("PortalProfesoresConnection"))
+#if DEBUG
+.EnableDetailedErrors()
+.LogTo(Console.WriteLine, LogLevel.Information)
+#endif
+);
+// Registrar dependencias de la aplicaciï¿½n
 builder.Services.AddInfrastructure();
 
+// Pasarela de pagos simulada
+if (builder.Environment.IsDevelopment())
+{
+    builder.Services.AddScoped<
+        IPasarelaPagoService,
+        PasarelaPagoSimulada>();
+}
+builder.Services.AddHostedService<ReservaVencimientoService>();
+
 // Servicios de ASP.NET Core
-builder.Services.AddControllers();
-// Configuración de CORS para permitir
+
+builder.Services
+    .AddControllers()
+    .ConfigureApiBehaviorOptions(options =>
+    {
+        options.InvalidModelStateResponseFactory = context =>
+        {
+            var errores = context.ModelState
+                .Where(x => x.Value?.Errors.Count > 0)
+                .SelectMany(x => x.Value!.Errors)
+                .Select(x => string.IsNullOrWhiteSpace(x.ErrorMessage)
+                    ? "El valor enviado no es vÃ¡lido."
+                    : x.ErrorMessage)
+                .Distinct()
+                .ToList();
+
+            var response = new
+            {
+                success = false,
+                statusCode = StatusCodes.Status400BadRequest,
+                message = "La solicitud contiene datos invÃ¡lidos.",
+                errors = errores
+            };
+
+            return new BadRequestObjectResult(response);
+        };
+    });
+
+// Configuraciï¿½n de CORS para permitir
 // que el Frontend Angular consuma la API.
 builder.Services.AddCors(options =>
 {
@@ -52,7 +93,7 @@ builder.Services.AddSwaggerGen(options =>
         Scheme = "bearer",
         BearerFormat = "JWT",
         In = ParameterLocation.Header,
-        Description = "Ingrese únicamente el token JWT."
+        Description = "Ingrese unicamente el token JWT."
     });
 
     options.AddSecurityRequirement(new OpenApiSecurityRequirement
@@ -77,23 +118,76 @@ var jwtSettings = builder.Configuration
     .GetSection("Jwt")
     .Get<JwtSettings>()!;
 
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+
+builder.Services.AddAuthentication(
+    JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
-        options.TokenValidationParameters = new TokenValidationParameters
+        options.TokenValidationParameters =
+            new TokenValidationParameters
+            {
+                ValidateIssuer = true,
+                ValidateAudience = true,
+                ValidateLifetime = true,
+                ValidateIssuerSigningKey = true,
+
+                ValidIssuer = jwtSettings.Issuer,
+                ValidAudience = jwtSettings.Audience,
+
+                IssuerSigningKey = new SymmetricSecurityKey(
+                    Encoding.UTF8.GetBytes(jwtSettings.Key))
+            };
+
+        options.Events = new JwtBearerEvents
         {
-            ValidateIssuer = true,
-            ValidateAudience = true,
-            ValidateLifetime = true,
-            ValidateIssuerSigningKey = true,
+            OnChallenge = async context =>
+            {
+                // Evita que ASP.NET Core escriba
+                // su respuesta 401 predeterminada.
+                context.HandleResponse();
 
-            ValidIssuer = jwtSettings.Issuer,
-            ValidAudience = jwtSettings.Audience,
+                if (context.Response.HasStarted)
+                    return;
 
-            IssuerSigningKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(jwtSettings.Key))
+                context.Response.StatusCode =
+                    StatusCodes.Status401Unauthorized;
+
+                context.Response.ContentType =
+                    "application/json; charset=utf-8";
+
+                var response = new
+                {
+                    success = false,
+                    statusCode = StatusCodes.Status401Unauthorized,
+                    message = "Debes iniciar sesiÃ³n para acceder a este recurso."
+                };
+
+                await context.Response.WriteAsJsonAsync(response);
+            },
+
+            OnForbidden = async context =>
+            {
+                if (context.Response.HasStarted)
+                    return;
+
+                context.Response.StatusCode =
+                    StatusCodes.Status403Forbidden;
+
+                context.Response.ContentType =
+                    "application/json; charset=utf-8";
+
+                var response = new
+                {
+                    success = false,
+                    statusCode = StatusCodes.Status403Forbidden,
+                    message = "No tienes permisos para realizar esta operaciÃ³n."
+                };
+
+                await context.Response.WriteAsJsonAsync(response);
+            }
         };
     });
+
 
 builder.Services.AddHttpContextAccessor();
 
@@ -126,6 +220,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseStaticFiles();
 
 app.UseCors("Angular");
 

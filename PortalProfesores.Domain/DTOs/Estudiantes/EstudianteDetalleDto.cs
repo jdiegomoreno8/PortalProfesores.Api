@@ -127,6 +127,10 @@ public class EstudianteDetalleDto
     /// Observaciones relacionadas con el estudiante.
     /// </summary>
     public string? Observaciones { get; set; }
+    // ---------------------------------------------------------
+    // Foto url
+    // ---------------------------------------------------------
+    public string? FotoPerfilUrl { get; set; }
 
 
     // ---------------------------------------------------------

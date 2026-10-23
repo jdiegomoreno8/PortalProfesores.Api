@@ -47,4 +47,12 @@ public interface IEstudianteRepository
     Task<bool> CambiarEstadoAsync(
         long idEstudiante,
         long idEstadoUsuario);
+
+    /// <summary>
+    /// Actualiza la ruta de la fotografía de perfil
+    /// del estudiante.
+    /// </summary>
+    Task<bool> ActualizarFotoPerfilAsync(
+        long idEstudiante,
+        string? fotoPerfilUrl);
 }

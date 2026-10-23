@@ -29,6 +29,13 @@ public class ProfesorDetalleConfiguration
         builder.Property(x => x.Biografia)
                .HasColumnType("nvarchar(max)");
 
+
+        builder.Property(x => x.FotoPerfilUrl)
+            .HasColumnName("FotoPerfilUrl")
+            .HasMaxLength(500)
+            .IsRequired(false);
+
+
         builder.Property(x => x.FechaIngreso)
                .IsRequired();
 

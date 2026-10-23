@@ -76,6 +76,23 @@ public class ClaseConfiguration
 
         builder.Property(x => x.DuracionMinutos);
 
+
+        // Precio de la clase
+        builder.Property(x => x.Precio)
+               .HasColumnType("decimal(18,2)")
+               .IsRequired();
+
+        // Moneda de la clase
+        builder.Property(x => x.IdMoneda)
+               .HasColumnName("IdMoneda")
+               .IsRequired();
+
+        builder.HasOne(x => x.Moneda)
+               .WithMany()
+               .HasForeignKey(x => x.IdMoneda)
+               .OnDelete(DeleteBehavior.Restrict);
+
+
         builder.Property(x => x.Orden)
                .IsRequired();
 

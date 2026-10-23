@@ -34,4 +34,7 @@ public class Sesion
 
     [ForeignKey(nameof(IdClase))]
     public Clase? Clase { get; set; }
+
+    [ForeignKey(nameof(IdReserva))]
+    public Reserva? Reserva { get; set; }
 }

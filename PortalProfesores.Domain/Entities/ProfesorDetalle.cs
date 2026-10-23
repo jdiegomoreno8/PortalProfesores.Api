@@ -8,7 +8,7 @@ public class ProfesorDetalle
     public string? Presentacion { get; set; }
     public string? Experiencia { get; set; }
     public string? Biografia { get; set; }
-
+    public string? FotoPerfilUrl { get; set; }
     public DateTime FechaIngreso { get; set; }
     public DateTime FechaCreacion { get; set; }
     public long? UsuarioCreacion { get; set; }

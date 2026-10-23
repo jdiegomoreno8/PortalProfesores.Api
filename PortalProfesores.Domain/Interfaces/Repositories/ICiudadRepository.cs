@@ -12,4 +12,8 @@ public interface ICiudadRepository
     /// Obtiene todas las ciudades disponibles.
     /// </summary>
     Task<IEnumerable<Ciudad>> ObtenerTodosAsync();
+    /// <summary>
+    /// Obtiene una ciudad por su identificador.
+    /// </summary>
+    Task<Ciudad?> ObtenerPorIdAsync(long idCiudad);
 }

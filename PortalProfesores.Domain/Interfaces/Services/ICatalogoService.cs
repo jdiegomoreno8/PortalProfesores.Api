@@ -22,4 +22,19 @@ public interface ICatalogoService
     /// Obtiene los niveles académicos disponibles.
     /// </summary>
     Task<IEnumerable<CatalogoItemDto>> ObtenerNivelesAsync();
+
+    /// <summary>
+    /// Obtiene los niveles académicos disponibles.
+    /// </summary>
+    Task<IEnumerable<CatalogoItemDto>> ObtenerCategoriasAsync();
+
+    /// <summary>
+    /// Obtiene los niveles académicos disponibles.
+    /// </summary>
+    Task<IEnumerable<CatalogoItemDto>> ObtenerIdiomasAsync();
+
+    /// <summary>
+    /// Obtiene las monedas disponibles para las tarifas de las clases.
+    /// </summary>
+    Task<IEnumerable<CatalogoItemDto>> ObtenerMonedasAsync();
 }

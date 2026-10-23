@@ -100,10 +100,13 @@ public class ProfesorRepository : IProfesorRepository
             .FirstOrDefault() ?? string.Empty
         : string.Empty,
 
+
                 Presentacion = profesor.Presentacion,
                 Experiencia = profesor.Experiencia,
                 Biografia = profesor.Biografia,
+                FotoPerfilUrl = profesor.FotoPerfilUrl,
                 FechaIngreso = profesor.FechaIngreso
+
             })
             .FirstOrDefaultAsync();
     }
@@ -139,11 +142,13 @@ public class ProfesorRepository : IProfesorRepository
 
                 Experiencia = profesor.Experiencia,
 
-                Biografia = profesor.Biografia
+                Biografia = profesor.Biografia,
+
+                FotoPerfilUrl = profesor.FotoPerfilUrl,
             })
-            .OrderBy(profesor => profesor.Apellidos)
-            .ThenBy(profesor => profesor.Nombres)
-            .ToListAsync();
+        .OrderBy(_ => Guid.NewGuid())
+.Take(3)
+.ToListAsync();
     }
 
 }
